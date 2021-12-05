@@ -1,6 +1,24 @@
+<h1> H-S-MW </h1>
+
+<div align="center">
+
 [![License (GPL version 3)](https://img.shields.io/badge/license-GNU%20GPL%20version%203-blue.svg?style=flat-square)](../LICENSE)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](../LICENSE)
 ![ZSH 5.0.0](https://img.shields.io/badge/zsh-v5.0.0-orange.svg?style=flat-square)
+
+</div>
+
+- [Introduction](#introduction)
+- [Installation](#installation)
+    - [ZI](#zi)
+    - [Zinit](#zinit)
+    - [Antigen](#antigen)
+    - [Oh-My-Zsh](#oh-my-zsh)
+    - [Zgen](#zgen)
+    - [Arch Linux](#arch-linux)
+- [Customizing](#customizing)
+  - [Zstyles](#zstyles)
+  - [Syntax highlighting](#syntax-highlighting)
 
 # Introduction
 
@@ -16,7 +34,7 @@ with surrounding commands:
 Set:
 
 ```zsh
-    zstyle :plugin:history-search-multi-word reset-prompt-protect 1
+zstyle :plugin:history-search-multi-word reset-prompt-protect 1
 ```
 
 to be able to use `zle reset-prompt` in your e.g. `sched` calls, in presence of
@@ -27,8 +45,8 @@ overloading Zle widgets. You could e.g. use `sched` in following way:
 ```zsh
 PROMPT=%B%F{yellow}%D{%H:%M:%S}%B%b%f
 schedprompt() {
-    zle && zle reset-prompt
-    sched +1 schedprompt
+  zle && zle reset-prompt
+  sched +1 schedprompt
 }
 
 zmodload -i zsh/sched
@@ -57,7 +75,13 @@ other too, and also install with `Oh My Zsh` (by copying directory to
 ### [ZI](https://github.com/z-shell/zi)
 
 Add `zi load z-shell/history-search-multi-word` to your `.zshrc` file.
-Zplugin will handle cloning the plugin for you automatically the next time you
+ZI will handle cloning the plugin for you automatically the next time you
+start zsh.
+
+### [Zinit](https://github.com/z-shell/zdharma-continuum)
+
+Add `zinit load z-shell/history-search-multi-word` to your `.zshrc` file.
+Zinit will handle cloning the plugin for you automatically the next time you
 start zsh.
 
 ### Antigen
@@ -84,9 +108,9 @@ place you're doing your other `zgen load` calls in.
 
 2. Add the following to your `.zshrc`:
 
-    ```sh
-    source /usr/share/zsh/plugins/history-search-multi-word/history-search-multi-word.plugin.zsh
-    ```
+   ```sh
+   source /usr/share/zsh/plugins/history-search-multi-word/history-search-multi-word.plugin.zsh
+   ```
 
 3. Start a new terminal session
 
