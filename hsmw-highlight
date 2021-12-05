@@ -1,9 +1,7 @@
-# -*- Mode: sh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
-# vim:ft=zsh:sw=2:sts=2:et
-
 # -------------------------------------------------------------------------------------------------
 # Copyright (c) 2010-2016 zsh-syntax-highlighting contributors
 # Copyright (c) 2016-2017 Sebastian Gniazdowski (modifications)
+# Copyright (c) 2021 Salvydas Lukosius
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -238,7 +236,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
   # and :sudo_opt:.
   #
   # The tokens are always added with both leading and trailing colons to serve as
-  # word delimiters (an improvised array); [[ $x == *:foo:* ]] and x=${x//:foo:/} 
+  # word delimiters (an improvised array); [[ $x == *:foo:* ]] and x=${x//:foo:/}
   # will DTRT regardless of how many elements or repetitions $x has..
   #
   # Handling of redirections: upon seeing a redirection token, we must stall
@@ -259,8 +257,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 
   # Processing buffer
   local proc_buf="$buf" needle
-  for arg in ${interactive_comments-${(z)buf}} \
-             ${interactive_comments+${(zZ+c+)buf}}; do
+  for arg in ${interactive_comments-${(z)buf}} ${interactive_comments+${(zZ+c+)buf}}; do
     # Initialize $next_word to its default value?
     (( in_redirection )) && (( --in_redirection ))
     (( in_redirection == 0 )) && next_word=2 # else Stall $next_word.
@@ -366,24 +363,24 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
         case "$arg" in
           # Flag that requires an argument
           '-'[Cgprtu])
-                       (( this_word & 1 )) && (( this_word = this_word ^ 1 ))
-                       (( next_word = 8 ))
-                       ;;
+                      (( this_word & 1 )) && (( this_word = this_word ^ 1 ))
+                      (( next_word = 8 ))
+                      ;;
           # This prevents misbehavior with sudo -u -otherargument
           '-'*)
-                       (( this_word & 1 )) && (( this_word = this_word ^ 1 ))
-                       (( next_word = next_word | 1 ))
-                       (( next_word = next_word | 4 ))
-                       ;;
+                      (( this_word & 1 )) && (( this_word = this_word ^ 1 ))
+                      (( next_word = next_word | 1 ))
+                      (( next_word = next_word | 4 ))
+                      ;;
           *)           ;;
         esac
       elif (( this_word & 8 )); then
         (( next_word = next_word | 4 ))
         (( next_word = next_word | 1 ))
       fi
-   fi
+  fi
 
-   expanded_path=""
+  expanded_path=""
 
    # The Great Fork: is this a command word?  Is this a non-command word?
    if (( this_word & 16 )) && [[ $arg == 'always' ]]; then
@@ -430,7 +427,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
         'suffix alias') style=suffix-alias;;
         alias)
                           insane_alias=0
-                          case $arg in 
+                          case $arg in
                             # Issue #263: aliases with '=' on their LHS.
                             #
                             # There are three cases:
@@ -695,7 +692,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
                   || "$AA" =~ "^[0-7]{1,3}"
                   || "$AA" =~ "^u[0-9a-fA-F]{1,4}"
                   || "$AA" =~ "^U[0-9a-fA-F]{1,8}"
-               ]]; then
+              ]]; then
               (( k += $#MATCH ))
               (( i += $#MATCH ))
             else
