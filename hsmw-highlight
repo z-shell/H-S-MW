@@ -528,7 +528,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
                    style=reserved-word
                  fi;;
         $'\x28\x29') # possibly a function definition
-                 # || false # TODO: or if the previous word was a command word
+                 # || false # TODO: #1 or if the previous word was a command word
                  (( multi_func_def )) && (( next_word = next_word | 1 ))
                  style=reserved-word
                  # Remove possible annoying unknown-token style, or misleading function style

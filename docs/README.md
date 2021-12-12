@@ -15,7 +15,6 @@
     - [Antigen](#antigen)
     - [Oh-My-Zsh](#oh-my-zsh)
     - [Zgen](#zgen)
-    - [Arch Linux](#arch-linux)
 - [Customizing](#customizing)
   - [Zstyles](#zstyles)
   - [Syntax highlighting](#syntax-highlighting)
@@ -60,10 +59,10 @@ overloaded (by F-Sy-H, zsh-autosuggestsions, etc.) `reset-prompt` widget.
 # Installation
 
 **The plugin is "standalone"**, which means that only sourcing it is needed. So to
-install, unpack `history-search-multi-word` somewhere and add
+install, unpack `H-S-MW` somewhere and add
 
 ```zsh
-source {where-hsmw-is}/history-search-multi-word.plugin.zsh
+source {where-hsmw-is}/H-S-MW.plugin.zsh
 ```
 
 to `zshrc`.
@@ -74,45 +73,35 @@ other too, and also install with `Oh My Zsh` (by copying directory to
 
 ### [ZI](https://github.com/z-shell/zi)
 
-Add `zi load z-shell/history-search-multi-word` to your `.zshrc` file.
+Add `zi load z-shell/H-S-MW` to your `.zshrc` file.
 ZI will handle cloning the plugin for you automatically the next time you
 start zsh.
 
 ### [Zinit](https://github.com/z-shell/zdharma-continuum)
 
-Add `zinit load z-shell/history-search-multi-word` to your `.zshrc` file.
+Add `zinit load z-shell/H-S-MW` to your `.zshrc` file.
 Zinit will handle cloning the plugin for you automatically the next time you
 start zsh.
 
 ### Antigen
 
-Add `antigen bundle z-shell/history-search-multi-word` to your `.zshrc` file.
+Add `antigen bundle z-shell/H-S-MW` to your `.zshrc` file.
 Antigen will handle cloning the plugin for you automatically the next time you
-start zsh. You can also add the plugin to a running zsh with `antigen bundle z-shell/history-search-multi-word` for testing before adding it to your
+start zsh. You can also add the plugin to a running zsh with `antigen bundle z-shell/H-S-MW` for testing before adding it to your
 `.zshrc`.
 
 ### Oh-My-Zsh
 
 1. `cd ~/.oh-my-zsh/custom/plugins`
-2. `git clone git@github.com:z-shell/history-search-multi-word.git`
-3. Add `history-search-multi-word` to your plugin list
+2. `git clone git@github.com:z-shell/H-S-MW.git`
+3. Add `H-S-MW` to your plugin list
 
 ### Zgen
 
-Add `zgen load z-shell/history-search-multi-word` to your .zshrc file in the same
+Add `zgen load z-shell/H-S-MW` to your .zshrc file in the same
 place you're doing your other `zgen load` calls in.
 
-### Arch Linux
-
-1. Install [`zsh-history-search-multi-word-git`](https://aur.archlinux.org/packages/zsh-history-search-multi-word-git/) from the [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository).
-
-2. Add the following to your `.zshrc`:
-
-   ```sh
-   source /usr/share/zsh/plugins/history-search-multi-word/history-search-multi-word.plugin.zsh
-   ```
-
-3. Start a new terminal session
+1. Start a new terminal session
 
 # Customizing
 
@@ -133,7 +122,7 @@ Syntax highlighting is customized via `HSMW_HIGHLIGHT_STYLES` associative array.
 It has keys like `reserved-word`, `alias`, `command`, `path`, etc. which are assigned
 with strings like `fg=blue,bold`, to configure how given elements are to be
 colored. If you assign this array before or after loading `hsmw` you will change the defaults. Complete list
-of available keys is [at the beginning](https://github.com/z-shell/history-search-multi-word/blob/main/hsmw-highlight#L34-L62)
+of available keys is [at the beginning](https://github.com/z-shell/H-S-MW/blob/main/hsmw-highlight#L34-L62)
 of `hsmw-highlight` file. Example `~/.zshrc` addition that sets `path` key –
 paths that exist will be highlighted with background magenta, foreground white, bold:
 

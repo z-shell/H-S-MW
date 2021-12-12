@@ -1,5 +1,5 @@
 # No plugin manager is needed to use this file. All that is needed is adding:
-#   source {where-unpacked}/history-search-multi-word.plugin.zsh to ~/.zshrc.
+#   source {where-unpacked}/H-S-MW.plugin.zsh to ~/.zshrc.
 #
 
 # According to the standard:
