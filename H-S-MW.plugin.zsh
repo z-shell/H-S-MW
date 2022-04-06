@@ -1,14 +1,15 @@
 # No plugin manager is needed to use this file. All that is needed is adding:
 #   source {where-unpacked}/H-S-MW.plugin.zsh to ~/.zshrc.
 #
-
-# According to the standard:
-# https://github.com/z-shell/zi/wiki/Zsh-Plugin-Standard
-0="${${ZERO:-${0:#$ZSH_ARGZERO}}:-${(%):-%N}}"
+# Standardized $0 Handling
+# https://z.digitalclouds.dev/community/zsh_plugin_standard#zero-handling
+0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
 0="${${(M)0:#/*}:-$PWD/$0}"
 
 HSMW_REPO_DIR="${0:h}"
 
+# Functions directory
+# https://z.digitalclouds.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]] {
   fpath+=( "${0:h}/functions" )
 }
