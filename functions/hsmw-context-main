@@ -1,3 +1,9 @@
+#  ============================================================================  #
+#  [ https://github.com/z-shell ] ❮ ZI ❯        [ (c) 2022 Z-SHELL COMMUNITY ]   #
+#  ============================================================================  #
+#
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
 __hsmw_ctx_prev_idx="$__hsmw_ctx_idx"
 
 [[ "$WIDGET" = *-word ]] && (( __hsmw_ctx_idx -- ))
