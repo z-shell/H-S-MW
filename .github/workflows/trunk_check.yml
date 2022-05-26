@@ -1,0 +1,16 @@
+---
+name: "⭕ Trunk"
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]
+  pull_request:
+    types: [opened, synchronize]
+  #  schedule:
+  #    - cron: 0 04 * * 1-5
+  workflow_dispatch: {}
+
+jobs:
+  check-call:
+    name: "⚡"
+    uses: z-shell/.github/.github/workflows/trunk-call.yml@main

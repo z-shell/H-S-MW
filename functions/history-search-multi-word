@@ -23,7 +23,7 @@
 # zstyle ":plugin:history-search-multi-word" synhl "yes"
 # zstyle ":plugin:history-search-multi-word" clear-on-cancel "no"
 
-[[ "$__HSMW_MH_SOURCED" != "1" ]] && source "$HSMW_REPO_DIR/hsmw-highlight"
+[[ "$__HSMW_MH_SOURCED" != "1" ]] && source "${HSMW_REPO_DIR}/functions/hsmw-highlight"
 local right_brace_is_recognised_everywhere
 integer path_dirs_was_set multi_func_def ointeractive_comments
 -hsmw-highlight-fill-option-variables
