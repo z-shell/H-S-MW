@@ -1,7 +1,12 @@
-# -------------------------------------------------------------------------------------------------
+#  ============================================================================  #
+#  [ https://github.com/z-shell ] ❮ ZI ❯        [ (c) 2022 Z-SHELL COMMUNITY ]   #
+#  ============================================================================  #
+#
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
 # Copyright (c) 2010-2016 zsh-syntax-highlighting contributors
 # Copyright (c) 2016-2017 Sebastian Gniazdowski (modifications)
-# Copyright (c) 2021 Salvydas Lukosius
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted
