@@ -26,7 +26,7 @@ H-S-MW has feature called **context viewing** – see all occurrences of a comm
 zstyle :plugin:history-search-multi-word reset-prompt-protect 1
 ```
 
-Use `zle reset-prompt` in `sched` calls, in presence of `z-shell/fast-syntax-highlighting`, `zsh-users/zsh-syntax-highlighting`, `zsh-users/zsh-autosuggestions` and other plugins that hook up into Zshell by overloading Zle widgets, e.g.:
+Use `zle reset-prompt` in `sched` calls, in presence of `z-shell/F-Sy-H`, `zsh-users/zsh-syntax-highlighting`, `zsh-users/zsh-autosuggestions` and other plugins that hook up into Zshell by overloading Zle widgets, e.g.:
 
 ```shell
 PROMPT=%B%F{yellow}%D{%H:%M:%S}%B%b%f
