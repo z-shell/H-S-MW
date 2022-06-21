@@ -29,7 +29,7 @@ integer path_dirs_was_set multi_func_def ointeractive_comments
 -hsmw-highlight-fill-option-variables
 
 builtin emulate -RL zsh ${=${options[xtrace]:#off}:+-o xtrace}
-builtin setopt extended_glob warn_create_global typeset_silent \
+builtin setopt extended_glob typeset_silent \
 local_traps prompt_subst no_short_loops rc_quotes no_auto_pushd
 
 # When an error, then no cursor keys bindings
