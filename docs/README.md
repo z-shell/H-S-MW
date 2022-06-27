@@ -1,22 +1,17 @@
-<table><tr><td>
-<h1 align="center">
-  <a href="https://github.com/z-shell/zi" target="_blank">
-    <img src="https://github.com/z-shell/zi/raw/main/docs/images/logo.svg" alt="Logo" width="60" height="60" />
-  </a>
-❮ ZI ❯ - History Search Multi Word
+<h1 align="center"><p>
+<a href="https://github.com/z-shell/zi" target="_blank">
+  <img src="https://github.com/z-shell/zi/raw/main/docs/images/logo.svg" alt="Logo" width="60px" height="60px" />
+</a>❮ Zi ❯ - History Search Multi Word</p>
 </h1>
-
-Binds <kbd>Ctrl-R</kbd> to a widget that searches for multiple keywords in `AND` fashion. In other words, you can enter multiple words, and history entries that match all of them will be found. The entries are syntax highlighted.
-
-<a href="https://asciinema.org/a/155704" target="_blank"><img src="https://asciinema.org/a/155704.svg" /></a>
-
-</td></tr>
-<tr><td align="center">
-<a href="../LICENSE" target="_blank">
+<h2 align="center"><p>
+Binds <kbd>Ctrl-R</kbd> to a widget that searches for multiple keywords in `AND` fashion.</p></h2>
+<h3 align="center"><p>
+ In other words, you can enter multiple words, and history entries that match all of them will be found. The entries are syntax highlighted.</p></h3>
+<p align="center"><a href="https://asciinema.org/a/155704" target="_blank"><img src="https://asciinema.org/a/155704.svg" /></a></p>
+<p align="center"><a href="../LICENSE" target="_blank">
   <img align="center" src="https://img.shields.io/badge/license-GNU%20GPL%20version%203-blue.svg?style=flat-square" alt="License (GPL version 3)">
 </a>
-<img align="center" src="https://img.shields.io/badge/zsh-v5.0.0-orange.svg?style=flat-square" alt="ZSH 5.0.0">
-</td></tr></table>
+<img align="center" src="https://img.shields.io/badge/zsh-v5.0.0-orange.svg?style=flat-square" alt="ZSH 5.0.0"></p><hr />
 
 ## Customizing
 
@@ -39,7 +34,7 @@ zmodload -i zsh/sched
 schedprompt
 ```
 
-Refresh the clock in prompt every second. The `reset-prompt-protect` zstyle needs to be set to 1 for correct cooperation with HSMW. Or, you could use `zle .reset-prompt` (i.e. with the dot in front) to call the original, not overloaded (by F-Sy-H, zsh-autosuggestsions, etc.) `reset-prompt` widget.
+Refresh the clock in prompt every second. The `reset-prompt-protect` zstyle needs to be set to 1 for correct cooperation with H-S-MW. Or, you could use `zle .reset-prompt` (i.e. with the dot in front) to call the original, not overloaded (by F-Sy-H, zsh-autosuggestions, etc.) `reset-prompt` widget.
 
 ### Zstyles
 
@@ -86,13 +81,11 @@ install, unpack `H-S-MW` somewhere and add to `zshrc`:
 source {where-hsmw-is}/H-S-MW.plugin.zsh
 ```
 
-If using a plugin manager, then `Zplugin` is recommended, but you can use any
-other too, and also install with `Oh My Zsh` (by copying directory to
-`~/.oh-my-zsh/custom/plugins`).
+If using a plugin manager, then `Zi` is recommended, but you can use any other too, and also install with `Oh My Zsh` (by copying directory to `~/.oh-my-zsh/custom/plugins`).
 
-### [ZI](https://github.com/z-shell/zi)
+### [Zi](https://github.com/z-shell/zi)
 
-Add `zi load z-shell/H-S-MW` to your `.zshrc` file. ZI will handle cloning the plugin for you automatically the next time you start zsh.
+Add `zi load z-shell/H-S-MW` to your `.zshrc` file. Zi will handle cloning the plugin for you automatically the next time you start zsh.
 
 ### Zinit
 

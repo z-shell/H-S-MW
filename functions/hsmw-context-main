@@ -64,8 +64,8 @@ _hsmw_ctx_main() {
   local to_search="${__hsmw_hcw_found[__hsmw_hcw_index]}" nl=$'\n'
   to_search="${to_search//(#m)[][*?|#~^()><\\]/\\$MATCH}"
   if [[ "$to_search" != "$__hsmw_ctx_to_search" ]]; then
-    __hsmw_ctx_to_search="$to_search"
-    repeat 1; do
+    __hsmw_ctx_to_search="$to_search"; repeat 1
+    do
       __hsmw_ctx_found=( "${(@kv)history[(R)$to_search]}" )
       __hsmw_ctx_text_idx="${__hsmw_ctx_found[(I)$to_search]}"
       if [[ "$__hsmw_ctx_text_idx" = "0" ]]; then
@@ -84,8 +84,8 @@ _hsmw_ctx_main() {
 
   integer max_index=$(( ${${(k)history[@]}[1]} + 1 ))
   if [[ "$max_index" -le "0" ]]; then
-      POSTDISPLAY=$'\n'"No matches found"
-      return 0
+    POSTDISPLAY=$'\n'"No matches found"
+    return 0
   fi
 
 #
@@ -107,7 +107,7 @@ integer on_page_idx=$(( page_size - (the_index - page_start_idx) ))
     integer idx
     __hsmw_ctx_disp_list=( )
     for (( idx = page_start_idx + page_size - 1; idx >= page_start_idx ; idx -- )); do
-        __hsmw_ctx_disp_list+=( "${history[$idx]}" )
+      __hsmw_ctx_disp_list+=( "${history[$idx]}" )
     done
     # Don't do @ splitting, it's slower
     __hsmw_ctx_disp_list_newlines=( "${__hsmw_ctx_disp_list[@]}" )
