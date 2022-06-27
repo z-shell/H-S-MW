@@ -1,6 +1,6 @@
 version: 0.1
 cli:
-  version: 0.13.1-beta
+  version: 0.13.2-beta
 repo:
   repo:
     host: github.com
@@ -8,10 +8,10 @@ repo:
     name: H-S-MW
 lint:
   enabled:
-    - actionlint@1.6.13
-    - gitleaks@8.8.7
+    - actionlint@1.6.14
+    - gitleaks@8.8.10
     - markdownlint@0.31.1
-    - prettier@2.6.2
+    - prettier@2.7.1
     - shfmt@3.5.0
   linters:
     - name: markdownlint
