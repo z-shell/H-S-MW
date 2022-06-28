@@ -1,0 +1,36 @@
+documentation 📝:
+  - "docs/**/*.md"
+dependencies 📦:
+  - "package.json"
+  - "pnpm-lock.yaml"
+  - "yarn.lock"
+enhancement ✨:
+  - "functions/**"
+  - "src/**"
+  - "lib/**"
+maintenance 📈:
+  - ".github/CODEOWNERS"
+  - ".github/*.md"
+  - ".github/*.yml"
+  - ".github/*.json"
+  - ".vscode"
+  - "tsconfig.json"
+  - "babel.config.js"
+  - "docusaurus.config.js"
+  - ".all-contributorsrc"
+  - "crowdin.yml"
+  - "netlify.toml"
+  - ".prettierrc"
+  - ".prettierignore"
+  - ".markdownlint.json"
+  - ".deepsource.toml"
+  - ".trunk/*.yaml"
+  - ".trunk/*.json"
+  - ".trunk/*rc"
+i18n 🌐:
+  - "i18n/**"
+ci 🤖:
+  - ".github/workflows/*.yml"
+plugin ⚙️:
+  - "functions/**"
+  - "*.zsh"
