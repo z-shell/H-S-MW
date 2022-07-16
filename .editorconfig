@@ -1,5 +1,3 @@
-# https://github.com/z-shell/community/blob/main/docs/project/workspace/editor/editorconfig/.editorconfig-root
-#
 # Space or Tabs?
 # https://stackoverflow.com/questions/35649847/objective-reasons-for-using-spaces-instead-of-tabs-for-indentation
 # https://stackoverflow.com/questions/12093748/how-to-use-tabs-instead-of-spaces-in-a-shell-script
@@ -38,6 +36,9 @@ trim_trailing_whitespace = false
 
 [*.{cmd,bat}]
 end_of_line = crlf
+
+[*za-*]
+end_of_line = lf
 
 [*.{sh,bash,zsh,fish}]
 end_of_line = lf
