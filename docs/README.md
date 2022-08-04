@@ -9,7 +9,7 @@
   History entries that match all keywords will be found and syntax highlighted.
 </p></h2>
 </p></h3>
-<p align="center"><a href="https://asciinema.org/a/155704" target="_blank"><img src="https://asciinema.org/a/155704.svg" alt="ASCIInema Colored Zsh History – context of command demo" /></a></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/59910950/182902165-a2e82ec4-c4e8-49a7-a83f-036e0a698655.gif" alt="ASCIInema Colored Zsh History – context of command demo" /></p>
 <p align="center"><a href="../LICENSE" target="_blank">
   <img align="center" src="https://img.shields.io/badge/license-GNU%20GPL%20version%203-blue.svg?style=flat-square" alt="License (GPL version 3)">
 </a>
