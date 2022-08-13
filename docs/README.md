@@ -104,7 +104,10 @@ Add `zi load z-shell/H-S-MW` to your `~/.zshrc` file. ZI will handle cloning the
 
 1. Run this command to clone and mv to the ~/.oh-my-zsh/custom/plugins directory
 
-   `git clone https://github.com/Thejus-M/H-S-MW.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/H-S-MW`
+   ```zsh
+   git clone https://github.com/z-shell/H-S-MW.git \
+    ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/H-S-MW
+   ```
 
 2. Add `H-S-MW` to your plugin list in the ~/.zshrc file
 
