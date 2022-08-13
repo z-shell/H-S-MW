@@ -102,9 +102,13 @@ Add `zi load z-shell/H-S-MW` to your `~/.zshrc` file. ZI will handle cloning the
 
 ### [Oh My Zsh](https://github.com/robbyrussell/oh-my-zsh) (OMZ)
 
-1. `cd ~/.oh-my-zsh/custom/plugins`
-2. `git clone git@github.com:z-shell/H-S-MW.git`
-3. Add `H-S-MW` to your plugin list
+1. Run this command to clone and mv to the ~/.oh-my-zsh/custom/plugins directory
+
+   `git clone https://github.com/Thejus-M/H-S-MW.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/H-S-MW`
+
+2. Add `H-S-MW` to your plugin list in the ~/.zshrc file
+
+   `plugins=(... H-S-MW)`
 
 ### [Zinit](https://github.com/zdharma-continuum/zinit)
 
