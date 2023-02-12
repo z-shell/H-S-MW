@@ -1,7 +1,7 @@
 <h1 align="center"><p>
   <a href="https://github.com/z-shell/zi" target="_blank">
     <img src="https://github.com/z-shell/zi/raw/main/docs/images/logo.svg" alt="ZI logo" width="60px" height="60px" />
-    ❮ ZI ❯
+    ❮ Zi ❯
   </a> - H-S-MW (History Search Multi Word)
 </p></h1>
 <h2 align="center"><p>
@@ -65,14 +65,14 @@ If you assign this array in `~/.zshrc` before or after loading `hsmw` you will c
 
 #### Examples
 
-1. Sets `path` key – paths that exist will be highlighted with background magenta, foreground white, bold
+##### Sets `path` key – paths that exist will be highlighted with background magenta, foreground white, bold
 
 ```zsh
 typeset -gA HSMW_HIGHLIGHT_STYLES
 HSMW_HIGHLIGHT_STYLES[path]="bg=magenta,fg=white,bold"
 ```
 
-2. Enable coloring of options of form "-o" and "--option", with cyan
+##### Enable coloring of options of form "-o" and "--option", with cyan
 
 ```zsh
 typeset -gA HSMW_HIGHLIGHT_STYLES
@@ -80,7 +80,7 @@ HSMW_HIGHLIGHT_STYLES[single-hyphen-option]="fg=cyan"
 HSMW_HIGHLIGHT_STYLES[double-hyphen-option]="fg=cyan"
 ```
 
-3. Use 256 colors to highlight command separators (like ";" or "&&")
+##### Use 256 colors to highlight command separators (like ";" or "&&")
 
 ```zsh
 HSMW_HIGHLIGHT_STYLES[commandseparator]="fg=241,bg=17"
@@ -94,11 +94,11 @@ HSMW_HIGHLIGHT_STYLES[commandseparator]="fg=241,bg=17"
 source {where-hsmw-is}/H-S-MW.plugin.zsh
 ```
 
-If using a plugin manager, then [ZI](https://github.com/z-shell/zi) is recommended, but you can use others if you prefer:
+If using a plugin manager, then [Zi](https://github.com/z-shell/zi) is recommended, but you can use others if you prefer:
 
-### [ZI](https://github.com/z-shell/zi)
+### [Zi](https://github.com/z-shell/zi)
 
-Add `zi load z-shell/H-S-MW` to your `~/.zshrc` file. ZI will handle cloning the plugin for you automatically the next time you start zsh.
+Add `zi load z-shell/H-S-MW` to your `~/.zshrc` file. Zi will handle cloning the plugin for you automatically the next time you start zsh.
 
 ### [Oh My Zsh](https://github.com/robbyrussell/oh-my-zsh) (OMZ)
 
