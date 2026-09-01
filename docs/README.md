@@ -51,6 +51,7 @@ Alternatively, you could use `zle .reset-prompt` (i.e. with the dot in front) to
 ```zsh
 zstyle ":history-search-multi-word" page-size "8"                      # Number of entries to show (default is $LINES/3)
 zstyle ":history-search-multi-word" highlight-color "fg=yellow,bold"   # Color in which to highlight matched, searched text (default bg=17 on 256-color terminals)
+zstyle ":history-search-multi-word" background-color "bg=22"           # Color of the tooltip background in context history (default bg=22 on 256-color terminals)
 zstyle ":plugin:history-search-multi-word" synhl "yes"                 # Whether to perform syntax highlighting (default true)
 zstyle ":plugin:history-search-multi-word" active "underline"          # Effect on active history entry. Try: standout, bold, bg=blue (default underline)
 zstyle ":plugin:history-search-multi-word" check-paths "yes"           # Whether to check paths for existence and mark with magenta (default true)

@@ -142,7 +142,7 @@ text[replace_idx]=">"
   integer offset=${#preamble}+${#BUFFER}
   POSTDISPLAY="$preamble$text"
   if (( page_start_idx != __hsmw_ctx_page_start_idx || offset != __hsmw_ctx_prev_offset )); then
-    region_highlight=( "${#BUFFER} $offset bg=22" )
+    region_highlight=( "${#BUFFER} $offset ${__hsmw_bg_color}" )
     if (( __hsmw_synhl )); then
       integer pre_index=$offset
       local line

@@ -20,6 +20,7 @@
 # Zstyles:
 # zstyle ":history-search-multi-word" page-size "8"
 # zstyle ":history-search-multi-word" highlight-color "fg=yellow,bold"
+# zstyle ":history-search-multi-word" background-color "bg=22"
 # zstyle ":plugin:history-search-multi-word" synhl "yes"
 # zstyle ":plugin:history-search-multi-word" clear-on-cancel "no"
 
@@ -62,6 +63,7 @@ _hsmw_main() {
       # Read configuration data
       zstyle -s ':history-search-multi-word' page-size __hsmw_page_size || __hsmw_page_size=$(( LINES / 3 ))
       zstyle -s ':history-search-multi-word' highlight-color __hsmw_hl_color || __hsmw_hl_color="fg=yellow,bold"
+      zstyle -s ':history-search-multi-word' background-color __hsmw_bg_color || __hsmw_bg_color="bg=22"
       zstyle -T ":plugin:history-search-multi-word" synhl && __hsmw_synhl=1 || __hsmw_synhl=0
       zstyle -s ":plugin:history-search-multi-word" active __hsmw_active || __hsmw_active="underline"
       zstyle -T ":plugin:history-search-multi-word" check-paths && __hsmw_no_check_paths=0 || __hsmw_no_check_paths=1
