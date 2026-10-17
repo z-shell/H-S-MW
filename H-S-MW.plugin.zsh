@@ -24,11 +24,14 @@
   (( ${+functions[history-search-multi-word_plugin_unload]} )) && return 0
 
   # What this load and the first search add, so unload removes only that:
-  #   fpath   - the functions/ entry, when this load appended it
-  #   ctrl_r  - the widget Ctrl-R ran in the main keymap before loading
-  #   modules - terminal modules the search loaded (it records them itself)
+  #   fpath       - the functions/ entry, when this load appended it
+  #   keymap      - the keymap main named at load, where Ctrl-R is bound
+  #   ctrl_r_kind - what Ctrl-R did there before: widget, string, or empty
+  #                 when it was unbound or already ran this plugin's widget
+  #   ctrl_r      - that widget name or string
+  #   modules     - terminal modules the search loaded (it records them)
   typeset -gA _history_search_multi_word_state
-  _history_search_multi_word_state=( fpath '' ctrl_r '' modules '' )
+  _history_search_multi_word_state=( fpath '' keymap '' ctrl_r_kind '' ctrl_r '' modules '' )
 
   # Add functions/ only when no manager or earlier load already did.
   if (( ! ${fpath[(Ie)$functions_dir]} )); then
@@ -46,23 +49,31 @@
 
     local -A state
     (( ${+_history_search_multi_word_state} )) && state=( "${(@kv)_history_search_multi_word_state}" )
-    local definition binding module
+    local definition binding module keymap=${state[keymap]-}
     local -a words
 
     if zmodload -e zsh/zle; then
-      # Ctrl-R goes back to its earlier widget only while it still runs the
-      # search; a binding the user made after loading is theirs.
-      if [[ -n ${state[ctrl_r]-} ]]; then
-        binding=$(builtin bindkey -M main '^R' 2>/dev/null)
-        [[ ${binding##* } == history-search-multi-word ]] &&
-          builtin bindkey -M main '^R' "${state[ctrl_r]}"
+      # Ctrl-R gets back what it did before loading, in the keymap it was
+      # bound in, but only while it still runs the search: a binding the user
+      # made after loading is theirs.
+      if [[ -n $keymap ]]; then
+        binding=$(builtin bindkey -M "$keymap" '^R' 2>/dev/null)
+        if [[ $binding == '"^R" history-search-multi-word' ]]; then
+          case ${state[ctrl_r_kind]-} in
+            (widget) builtin bindkey -M "$keymap" '^R' "${state[ctrl_r]}" ;;
+            (string) builtin bindkey -M "$keymap" -s '^R' "${state[ctrl_r]}" ;;
+            (*) builtin bindkey -M "$keymap" -r '^R' ;;
+          esac
+        fi
       fi
       builtin bindkey -D history-search-multi-word 2>/dev/null
-      # Delete the widgets whose function is the plugin's, whatever their name.
+      # Delete the plugin's widgets by name. A wrapper that replaced a public
+      # widget is removed with it; copies and aliases under other names belong
+      # to whoever made them.
       for definition in "${(@f)$(builtin zle -lL 2>/dev/null)}"; do
         words=( "${(@Q)${(z)definition}}" )
         [[ ${words[1]} == zle && ${words[2]} == -N ]] || continue
-        [[ ${words[4]:-${words[3]}} == (history-search-multi-word|_history_search_multi_word_*) ]] &&
+        [[ ${words[3]} == (history-search-multi-word(|-backwards|-pbackwards|-pforwards)|_history_search_multi_word_*) ]] &&
           builtin zle -D -- "${words[3]}"
       done
     fi
@@ -88,15 +99,32 @@
 
   # Widgets and key bindings belong to the line editor of an interactive shell.
   [[ -o interactive ]] || return 0
-  local binding
-  binding=$(builtin bindkey -M main '^R' 2>/dev/null) &&
-    _history_search_multi_word_state[ctrl_r]=${binding##* }
+
+  # Bind Ctrl-R in the keymap main names now, so a later bindkey -e or -v does
+  # not move it, and record what it did there. A builtin's output can only be
+  # read through a subshell; this is the one the load costs.
+  local keymap=main
+  local -a listing words
+  listing=( "${(@f)$(builtin bindkey -lL main; builtin bindkey -M main -L '^R')}" ) 2>/dev/null
+  words=( "${(@Q)${(z)listing[1]-}}" )
+  # bindkey -A KEYMAP main
+  [[ ${words[1]-} == bindkey && ${words[2]-} == -A && ${words[4]-} == main ]] && keymap=${words[3]}
+  _history_search_multi_word_state[keymap]=$keymap
+  # bindkey [-s] -M KEYMAP "^R" WIDGET-OR-STRING
+  words=( "${(@Q)${(z)listing[2]-}}" )
+  if [[ ${words[2]-} == -s ]]; then
+    _history_search_multi_word_state[ctrl_r_kind]=string
+    _history_search_multi_word_state[ctrl_r]=${words[-1]}
+  elif [[ -n ${words[-1]-} && ${words[-1]} != (undefined-key|history-search-multi-word) ]]; then
+    _history_search_multi_word_state[ctrl_r_kind]=widget
+    _history_search_multi_word_state[ctrl_r]=${words[-1]}
+  fi
   if ! {
     builtin zle -N history-search-multi-word &&
       builtin zle -N history-search-multi-word-backwards history-search-multi-word &&
       builtin zle -N history-search-multi-word-pbackwards history-search-multi-word &&
       builtin zle -N history-search-multi-word-pforwards history-search-multi-word &&
-      builtin bindkey -M main '^R' history-search-multi-word
+      builtin bindkey -M "$keymap" '^R' history-search-multi-word
   } 2>/dev/null; then
     print -u2 -r -- "history-search-multi-word: cannot create its widgets; the plugin is not loaded"
     history-search-multi-word_plugin_unload

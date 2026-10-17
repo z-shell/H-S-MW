@@ -42,7 +42,9 @@ hsmw_test_snapshot() {
     print -r -- "traps $(trap)"
     print -r -- "styles $(zstyle -L)"
     print -r -- "keymaps $(bindkey -l 2>/dev/null)"
-    print -r -- "main $(bindkey -M main -L 2>/dev/null)"
+    # Each keymap separately: main is only an alias that bindkey -e or -v moves.
+    print -r -- "main $(bindkey -lL main 2>/dev/null)"
+    for key in emacs viins vicmd; do print -r -- "keymap $key $(bindkey -M $key -L 2>/dev/null)"; done
     print -r -- "widgets $(zle -lL 2>/dev/null)"
   } >| $1
 }
@@ -63,14 +65,85 @@ same_state() {
   }
 }
 
-# Non-interactive: load then unload, by either name.
+# in_clean_shell NAME SCRIPT [ZSH_FLAG...]: run SCRIPT in a clean shell and
+# compare its before and after snapshots. With -i the shell is interactive, so
+# loading creates the widgets and the Ctrl-R binding, though no line editor
+# runs; searches need the zpty sessions below.
 in_clean_shell() {
   local name=$1 script=$2 dir=$hsmw_test_tmp/$1 out
-  command mkdir -p -- "$dir"
-  out=$(command env -u FPATH -u PMSPEC HOME=$dir ZDOTDIR=$dir "${TEST_ZSH:-zsh}" -f -c "$snapshot_fragment
-$script" 2>&1) || { hsmw_test_fail "$name: $out"; return 1 }
+  shift 2
+  command mkdir -p -- "$dir" || { hsmw_test_fail "$name: cannot create $dir"; return 1 }
+  out=$(command env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=$dir ZDOTDIR=$dir \
+    "${TEST_ZSH:-zsh}" -f "$@" -c "$snapshot_fragment
+$script" 2>&1 </dev/null) || { hsmw_test_fail "$name: $out"; return 1 }
   same_state "$name" "$dir/before" "$dir/after" && hsmw_test_pass "$name"
 }
+
+# Sourcing twice, then unloading once, leaves nothing behind.
+in_clean_shell unload-after-repeated-source "
+  hsmw_test_snapshot \$HOME/before
+  source ${(q)plugin}; source ${(q)plugin}
+  history-search-multi-word_plugin_unload
+  hsmw_test_snapshot \$HOME/after"
+in_clean_shell unload-after-repeated-source-interactive "
+  hsmw_test_snapshot \$HOME/before
+  source ${(q)plugin}; source ${(q)plugin}
+  history-search-multi-word_plugin_unload
+  hsmw_test_snapshot \$HOME/after" -i
+
+# Ctrl-R is bound in the keymap main named at load time, and restored there
+# even after main has been moved to another keymap.
+in_clean_shell unload-after-keymap-switch "
+  bindkey -e
+  hsmw_test_snapshot \$HOME/before
+  source ${(q)plugin}
+  bindkey -v
+  history-search-multi-word_plugin_unload
+  bindkey -e
+  hsmw_test_snapshot \$HOME/after" -i
+
+# A string binding on Ctrl-R comes back as the same string.
+in_clean_shell unload-string-binding "
+  bindkey -s '^R' 'echo hi'
+  hsmw_test_snapshot \$HOME/before
+  source ${(q)plugin}
+  history-search-multi-word_plugin_unload
+  hsmw_test_snapshot \$HOME/after" -i
+
+# Ctrl-R already running the plugin's widget before load (the manual setup
+# the widget's header describes) is unbound, not left on a deleted widget.
+typeset dir=$hsmw_test_tmp/unload-already-bound
+command mkdir -p -- $dir
+out=$(command env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=$dir ZDOTDIR=$dir "${TEST_ZSH:-zsh}" -f -i -c "
+  zle -N history-search-multi-word
+  bindkey '^R' history-search-multi-word
+  source ${(q)plugin}
+  history-search-multi-word_plugin_unload
+  bindkey -M emacs '^R'" 2>&1 </dev/null)
+[[ $out == '"^R" undefined-key' ]] && hsmw_test_pass unload-already-bound ||
+  hsmw_test_fail "unload-already-bound: Ctrl-R is [$out], expected it unbound"
+
+# A plugin that wraps every widget (zsh-autosuggestions does, on each precmd)
+# replaces the public widget and keeps a copy under its own name. Unload
+# removes the plugin's widgets by name and leaves the wrapper's copy and a
+# user's alias alone.
+dir=$hsmw_test_tmp/unload-wrapped-widget
+command mkdir -p -- $dir
+out=$(command env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=$dir ZDOTDIR=$dir "${TEST_ZSH:-zsh}" -f -i -c "
+  source ${(q)plugin}
+  zle -A history-search-multi-word my-alias
+  zle -A history-search-multi-word wrapper-orig-history-search-multi-word
+  _wrap() { zle wrapper-orig-history-search-multi-word }
+  zle -N history-search-multi-word _wrap
+  history-search-multi-word_plugin_unload
+  zle -lL" 2>&1 </dev/null)
+if [[ $out == *'zle -N history-search-multi-word '* ]]; then
+  hsmw_test_fail "unload-wrapped-widget: the public widget survives unload: $out"
+elif [[ $out != *'zle -N my-alias '* || $out != *'zle -N wrapper-orig-history-search-multi-word '* ]]; then
+  hsmw_test_fail "unload-wrapped-widget: unload deleted widgets it does not own: $out"
+else
+  hsmw_test_pass unload-wrapped-widget
+fi
 
 in_clean_shell unload "
   hsmw_test_snapshot \$HOME/before
