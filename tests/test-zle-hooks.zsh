@@ -71,8 +71,40 @@ check_no_leftovers() {
   (( hsmw_test_status |= failed ))
 }
 
+# check_repaint NAME KEYS...: a highlighter that, like F-Sy-H, repaints only
+# when BUFFER changed must find its paint again after a search that leaves
+# the buffer as it was.
+check_repaint() {
+  local name=$1 before after
+  integer failed=$hsmw_test_status
+  hsmw_test_status=0
+  shift
+  hsmw_test_session "$name" "$rc_fragment
+typeset -g hsmw_test_prior=
+_hsmw_test_paint() {
+  [[ \$BUFFER == \"\$hsmw_test_prior\" ]] && return 0
+  hsmw_test_prior=\$BUFFER
+  region_highlight=( \"0 \${#BUFFER} fg=red\" )
+}
+zle -N _hsmw_test_paint
+add-zle-hook-widget line-pre-redraw _hsmw_test_paint" 'ls -la /tmp' $'\C-xa' "$@" $'\C-xb' || return
+  before=${reply[(r)a\|*]} after=${reply[(r)b\|*]}
+  if [[ -z $before || -z $after ]]; then
+    hsmw_test_fail "$name: the probes did not run (${#reply} dump lines)"
+    return
+  fi
+  [[ $(hsmw_test_field "$before" region_highlight) == '0 11 fg=red' ]] ||
+    hsmw_test_fail "$name: the stub highlighter did not paint: $before"
+  [[ $(hsmw_test_field "$after" region_highlight) == '0 11 fg=red' ]] ||
+    hsmw_test_fail "$name: the line lost its highlighting: $(hsmw_test_field "$after" region_highlight)"
+  (( hsmw_test_status )) || hsmw_test_pass "$name"
+  (( hsmw_test_status |= failed ))
+}
+
 check_hooks accept $'\r'
 check_hooks cancel $'\C-v'
+check_repaint repaint-after-cancel $'\C-r' $'\C-v'
+check_repaint repaint-after-same-entry $'\C-r' $'\r'
 check_no_leftovers accept-leftovers $'\r'
 check_no_leftovers cancel-leftovers $'\C-v'
 
