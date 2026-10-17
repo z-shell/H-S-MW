@@ -9,6 +9,8 @@
 # `hsmw_test_dump LABEL`, which appends one line describing the editor state
 # to the session's output file. Chunks are sent one at a time with a pause in
 # between, so the editor redraws after each one instead of seeing typeahead.
+# The child execs env: a forked shell left in between would inherit the EXIT
+# trap below and delete the shared temporary directory when it is killed.
 
 zmodload zsh/zpty || { print -u2 -r -- 'zsh/zpty is unavailable'; exit 2 }
 
@@ -42,14 +44,15 @@ hsmw_test_session() {
     print -r -- "PS1='> ' RPS1= PROMPT_EOL_MARK="
     print -r -- "unsetopt prompt_cr prompt_sp"
     print -r -- "HISTSIZE=100 SAVEHIST=0"
+    print -r -- "typeset -g hsmw_test_nl=\$'\\n'"
     print -r -- "hsmw_test_dump() {"
-    print -r -- "  print -r -- \"\$1|pre_redraw=\${widgets[zle-line-pre-redraw]-}|keymap_select=\${widgets[zle-keymap-select]-}|redraws=\${hsmw_test_redraws-0}|buffer=\$BUFFER|postdisplay=\${#POSTDISPLAY}|region_highlight=\${(j:,:)region_highlight}\" >> ${(q)out}"
+    print -r -- "  print -r -- \"\$1|pre_redraw=\${widgets[zle-line-pre-redraw]-}|keymap_select=\${widgets[zle-keymap-select]-}|redraws=\${hsmw_test_redraws-0}|buffer=\$BUFFER|buffer_length=\${#BUFFER}|postdisplay=\${\${POSTDISPLAY//\$hsmw_test_nl/ }//|/ }|region_highlight=\${(j:,:)region_highlight}\" >> ${(q)out}"
     print -r -- "}"
-    print -r -- "for _n in a b c d e f g; do eval \"_hsmw_test_dump_\$_n() { hsmw_test_dump \$_n }\"; zle -N _hsmw_test_dump_\$_n; bindkey \"^X\$_n\" _hsmw_test_dump_\$_n; done; unset _n"
+    print -r -- "for _n in a b c d e f g; do eval \"_hsmw_test_dump_\$_n() { hsmw_test_dump \$_n }\"; zle -N _hsmw_test_dump_\$_n; bindkey \"^X\$_n\" _hsmw_test_dump_\$_n; bindkey -M emacs \"^X\$_n\" _hsmw_test_dump_\$_n; done; unset _n"
     print -r -- "$fragment"
     print -r -- "precmd() { : >| ${(q)ready} }"
   } >| $dir/.zshrc
-  zpty -b "hsmw-$name" "command env -u FPATH -u PMSPEC HOME=${(q)dir} ZDOTDIR=${(q)dir} TERM=xterm-256color LINES=40 COLUMNS=120 ${(q)${TEST_ZSH:-zsh}} -o no_global_rcs -i" || {
+  zpty -b "hsmw-$name" "exec env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=${(q)dir} ZDOTDIR=${(q)dir} TERM=xterm-256color LINES=40 COLUMNS=120 ${(q)${TEST_ZSH:-zsh}} -o no_global_rcs -i" || {
     hsmw_test_fail "$name: cannot start an interactive shell"
     return 1
   }
@@ -66,7 +69,17 @@ hsmw_test_session() {
   command sleep 0.2
   for chunk in "$@"; do
     zpty -w -n "hsmw-$name" "$chunk"
-    command sleep 0.3
+    if [[ $chunk == $'\C-x'[a-g] ]]; then
+      # A probe: wait for its dump line rather than for a fixed time.
+      deadline=$(( SECONDS + 10 ))
+      until [[ -r $out && -n ${(M)${(f)"$(<$out)"}:#${chunk[2]}\|*} ]] || (( SECONDS >= deadline )); do
+        command sleep 0.05
+        while zpty -r -t "hsmw-$name" line >/dev/null 2>&1; do :; done
+      done
+    else
+      # Plain keys: pause so the editor redraws instead of seeing typeahead.
+      command sleep 0.3
+    fi
     while zpty -r -t "hsmw-$name" line >/dev/null 2>&1; do :; done
   done
   zpty -d "hsmw-$name"

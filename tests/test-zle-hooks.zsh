@@ -30,6 +30,8 @@ print -s 'ls -la /tmp'
 # then check that typing still runs the line-pre-redraw hook.
 check_hooks() {
   local name=$1 exit_key=$2 before after
+  integer failed=$hsmw_test_status
+  hsmw_test_status=0
   hsmw_test_session "$name" "$rc_fragment" \
     $'\C-r' 'ls' "$exit_key" $'\C-u' $'\C-xa' 'x' $'\C-xb' || return
   before=${reply[(r)a\|*]} after=${reply[(r)b\|*]}
@@ -44,6 +46,7 @@ check_hooks() {
   (( $(hsmw_test_field "$after" redraws) > $(hsmw_test_field "$before" redraws) )) ||
     hsmw_test_fail "$name: typing after the search no longer runs the line-pre-redraw hook"
   (( hsmw_test_status )) || hsmw_test_pass "$name"
+  (( hsmw_test_status |= failed ))
 }
 
 # check_no_leftovers NAME EXIT_KEY: the search paints the result list it shows
@@ -53,6 +56,8 @@ check_hooks() {
 # repaint them over the buffer and over suggestions.
 check_no_leftovers() {
   local name=$1 exit_key=$2 probe entries
+  integer failed=$hsmw_test_status
+  hsmw_test_status=0
   hsmw_test_session "$name" "$rc_fragment" $'\C-r' 'ls' "$exit_key" $'\C-xa' || return
   probe=${reply[(r)a\|*]}
   if [[ -z $probe ]]; then
@@ -63,6 +68,7 @@ check_no_leftovers() {
   [[ -z $entries ]] ||
     hsmw_test_fail "$name: search highlights remain after the search: $entries"
   (( hsmw_test_status )) || hsmw_test_pass "$name"
+  (( hsmw_test_status |= failed ))
 }
 
 check_hooks accept $'\r'
