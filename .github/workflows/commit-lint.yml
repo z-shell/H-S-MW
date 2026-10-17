@@ -15,9 +15,9 @@ on:
 permissions:
   contents: read
 
-# No concurrency block here: the called workflow declares its own group from
-# github.workflow and github.ref, which resolve to the caller's values, so a
-# second declaration at this level deadlocks against it.
+# No concurrency block here: these are required checks that push and pull
+# request events can produce for the same head, and a cancelled or superseded
+# run would leave a stale result (see the organization workflow contract).
 
 jobs:
   policy:

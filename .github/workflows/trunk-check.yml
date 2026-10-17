@@ -22,8 +22,6 @@ jobs:
   check:
     name: Trunk Code Quality
     permissions:
-      actions: read
-      checks: write
       contents: read
     uses: z-shell/.github/.github/workflows/trunk.yml@main
     with:
