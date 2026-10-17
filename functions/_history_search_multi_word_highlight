@@ -736,7 +736,8 @@ _history_search_multi_word_highlight_init() {
   _history_search_multi_word_highlight_styles=()
   local token value
   for token in "${(@k)_history_search_multi_word_highlight_defaults}"; do
-    zstyle -s ':history-search-multi-word:highlight' "$token" value ||
+    # An empty value means the default, as it did for the former style hash.
+    zstyle -s ':history-search-multi-word:highlight' "$token" value && [[ -n $value ]] ||
       value=${_history_search_multi_word_highlight_defaults[$token]}
     _history_search_multi_word_highlight_styles[$token]=$value
   done

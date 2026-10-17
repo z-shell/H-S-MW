@@ -112,6 +112,11 @@ run token-style 'zstyle :history-search-multi-word:highlight command fg=red' \
   expect token-style a region_highlight '^(*fg=green*)' &&
   expect token-style a region_highlight '*fg=cyan*' && hsmw_test_pass token-style
 
+# An empty token style falls back to its default.
+run empty-token-style "zstyle :history-search-multi-word:highlight command ''" \
+  $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
+  expect empty-token-style a region_highlight '*fg=green*' && hsmw_test_pass empty-token-style
+
 # Paths matching a skip-paths pattern are not tested, so not shown as paths.
 run skip-paths "zstyle :history-search-multi-word skip-paths '/t*'" \
   $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
