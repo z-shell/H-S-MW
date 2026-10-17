@@ -26,7 +26,7 @@ Press <kbd>Ctrl-R</kbd> and type one or more words. Entries that contain every w
 | <kbd>Enter</kbd>                                                     | Put the selected entry on the command line        |
 | <kbd>Ctrl-K</kbd>                                                    | Show the entry in context, and again to go back   |
 | <kbd>Ctrl-J</kbd>                                                    | Copy the selected entry to the end of history     |
-| <kbd>Ctrl-V</kbd>, <kbd>Esc</kbd>                                    | Cancel and keep the query (see `clear-on-cancel`) |
+| <kbd>Ctrl-V</kbd>, <kbd>Esc</kbd>, <kbd>Ctrl-C</kbd>                 | Cancel and keep the query (see `clear-on-cancel`) |
 
 ## Configuration
 
@@ -96,17 +96,18 @@ This version follows [version 2 of the Zsh Plugin Standard](https://wiki.zshell.
 
 The project identifier is `history-search-multi-word`. Loading the plugin in an interactive shell creates exactly these public names; everything else it creates is private and named `_history_search_multi_word_*`.
 
+- Function: `history-search-multi-word`, autoloaded; it implements the widgets.
 - Widgets: `history-search-multi-word`, `history-search-multi-word-backwards`, `history-search-multi-word-pforwards`, `history-search-multi-word-pbackwards`.
-- Key binding: <kbd>Ctrl-R</kbd> in the `main` keymap.
+- Key binding: <kbd>Ctrl-R</kbd> in the keymap `main` names when the plugin loads, usually `emacs` or `viins`.
 - Style contexts: `:history-search-multi-word` and `:history-search-multi-word:highlight`.
 - Unload function: `history-search-multi-word_plugin_unload`, and `H-S-MW_plugin_unload`, the name Zi calls.
 - `fpath`: the plugin's `functions/` directory, added when it is not already there.
 
-A search also creates the `history-search-multi-word` keymap and loads `zsh/terminfo` and `zsh/termcap` when they are not loaded yet. A non-interactive shell gets only the `fpath` entry and the autoload definitions.
+A search also creates the `history-search-multi-word` keymap and loads `zsh/terminfo` and `zsh/termcap` when they are not loaded yet. A non-interactive shell gets only the `fpath` entry, the autoload definitions, the two unload functions and one private state parameter, `_history_search_multi_word_state`.
 
 ## Unloading
 
-`history-search-multi-word_plugin_unload` removes everything the plugin created: its widgets, keymap, functions, parameters, the `fpath` entry it added and the terminal modules a search loaded. <kbd>Ctrl-R</kbd> gets back the widget it ran before loading, unless you have bound it to something else since. With Zi, `zi unload z-shell/H-S-MW` calls it.
+`history-search-multi-word_plugin_unload` removes everything the plugin created: its widgets, keymap, functions, parameters, the `fpath` entry it added and the terminal modules a search loaded. <kbd>Ctrl-R</kbd> gets back the widget or string it had before loading, in the keymap it was bound in, unless you have bound it to something else since; if it was unbound, it is unbound again. With Zi, `zi unload z-shell/H-S-MW` calls it.
 
 ## Installation
 

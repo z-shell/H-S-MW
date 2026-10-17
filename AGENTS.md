@@ -37,7 +37,7 @@ A Zsh plugin that binds <kbd>Ctrl-R</kbd> to a multi-word, syntax-highlighted hi
 
 Review the plugin against the [Z-Shell Plugin Standard](https://wiki.zshell.dev/community/zsh_plugin_standard), version 2:
 
-- The project identifier is `history-search-multi-word`. Public names are the four `history-search-multi-word*` widgets, the two style contexts and the unload functions; every other function, parameter, widget and saved copy is `_history_search_multi_word_*`.
+- The project identifier is `history-search-multi-word`. Public names are the `history-search-multi-word` function, the four `history-search-multi-word*` widgets, the two style contexts and the unload functions; every other function, parameter, widget and saved copy is `_history_search_multi_word_*`.
 - All configuration is read from `:history-search-multi-word` and `:history-search-multi-word:highlight` when a search starts. Do not add global configuration parameters or a second context.
 - `history-search-multi-word_plugin_unload` must reverse every side effect of loading and searching. `H-S-MW_plugin_unload` exists only because Zi calls the unload function by repository name.
 - The widget reads the caller's `ignore_braces`, `path_dirs`, `multi_func_def` and `interactive_comments` before `emulate` on purpose, so history is highlighted the way the user's shell parses it.
