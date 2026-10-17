@@ -33,36 +33,39 @@
 
 typeset -gA _history_search_multi_word_highlight_command_type_cache
 
-# Define default styles.
-typeset -gA HSMW_HIGHLIGHT_STYLES
-: ${HSMW_HIGHLIGHT_STYLES[default]:=none}
-: ${HSMW_HIGHLIGHT_STYLES[unknown-token]:=fg=red,bold}
-: ${HSMW_HIGHLIGHT_STYLES[reserved-word]:=fg=yellow}
-: ${HSMW_HIGHLIGHT_STYLES[alias]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[suffix-alias]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[builtin]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[function]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[command]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[precommand]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[commandseparator]:=none}
-: ${HSMW_HIGHLIGHT_STYLES[hashed-command]:=fg=green}
-: ${HSMW_HIGHLIGHT_STYLES[path]:=fg=magenta}
-: ${HSMW_HIGHLIGHT_STYLES[path_pathseparator]:=}
-: ${HSMW_HIGHLIGHT_STYLES[globbing]:=fg=blue,bold}
-: ${HSMW_HIGHLIGHT_STYLES[history-expansion]:=fg=blue,bold}
-: ${HSMW_HIGHLIGHT_STYLES[single-hyphen-option]:=fg=cyan}
-: ${HSMW_HIGHLIGHT_STYLES[double-hyphen-option]:=fg=cyan}
-: ${HSMW_HIGHLIGHT_STYLES[back-quoted-argument]:=none}
-: ${HSMW_HIGHLIGHT_STYLES[single-quoted-argument]:=fg=yellow}
-: ${HSMW_HIGHLIGHT_STYLES[double-quoted-argument]:=fg=yellow}
-: ${HSMW_HIGHLIGHT_STYLES[dollar-quoted-argument]:=fg=yellow}
-: ${HSMW_HIGHLIGHT_STYLES[back-or-dollar-double-quoted-argument]:=fg=cyan}
-: ${HSMW_HIGHLIGHT_STYLES[back-dollar-quoted-argument]:=fg=cyan}
-: ${HSMW_HIGHLIGHT_STYLES[assign]:=none}
-: ${HSMW_HIGHLIGHT_STYLES[redirection]:=none}
-: ${HSMW_HIGHLIGHT_STYLES[comment]:=fg=black,bold}
-: ${HSMW_HIGHLIGHT_STYLES[newline]:=fg=black,bold}  # '\n' strings
-: ${HSMW_HIGHLIGHT_STYLES[variable]:=none}
+# Default token styles. A search reads each one from
+# zstyle :history-search-multi-word:highlight TOKEN, falling back to these.
+typeset -gA _history_search_multi_word_highlight_defaults
+_history_search_multi_word_highlight_defaults=(
+  default                                none
+  unknown-token                          fg=red,bold
+  reserved-word                          fg=yellow
+  alias                                  fg=green
+  suffix-alias                           fg=green
+  builtin                                fg=green
+  function                               fg=green
+  command                                fg=green
+  precommand                             fg=green
+  commandseparator                       none
+  hashed-command                         fg=green
+  path                                   fg=magenta
+  path_pathseparator                     ''
+  globbing                               fg=blue,bold
+  history-expansion                      fg=blue,bold
+  single-hyphen-option                   fg=cyan
+  double-hyphen-option                   fg=cyan
+  back-quoted-argument                   none
+  single-quoted-argument                 fg=yellow
+  double-quoted-argument                 fg=yellow
+  dollar-quoted-argument                 fg=yellow
+  back-or-dollar-double-quoted-argument  fg=cyan
+  back-dollar-quoted-argument            fg=cyan
+  assign                                 none
+  redirection                            none
+  comment                                fg=black,bold
+  newline                                fg=black,bold  # '\n' strings
+  variable                               none
+)
 
 
 typeset -gA _history_search_multi_word_highlight_token_types
@@ -306,7 +309,7 @@ _history_search_multi_word_highlight_process()
       if [[ "${proc_buf[offset+1]}" = $'\n' ]]; then
         (( in_array_assignment )) && (( this_word = 2 )) || { (( this_word = 1 )); highlight_glob=1; }
         in_redirection=0
-        reply+=("$(( start_pos - 1)) $end_pos ${HSMW_HIGHLIGHT_STYLES[newline]}")
+        reply+=("$(( start_pos - 1)) $end_pos ${_history_search_multi_word_highlight_styles[newline]}")
         proc_buf="${proc_buf[offset + $#arg + 1,len]}"
         start_pos=$end_pos
         continue
@@ -314,7 +317,7 @@ _history_search_multi_word_highlight_process()
         # One more short path – for ';' command separator
         (( in_array_assignment )) && (( this_word = 2 )) || { (( this_word = 1 )); highlight_glob=1; }
         in_redirection=0
-        [[ "${HSMW_HIGHLIGHT_STYLES[commandseparator]}" != "none" ]] && reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[commandseparator]}")
+        [[ "${_history_search_multi_word_highlight_styles[commandseparator]}" != "none" ]] && reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[commandseparator]}")
         proc_buf="${proc_buf[offset + $#arg + 1,len]}"
         start_pos=$end_pos
         continue
@@ -346,7 +349,7 @@ _history_search_multi_word_highlight_process()
         style=unknown-token # prematurely terminated
       fi
       # ADD
-      reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[$style]}")
+      reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[$style]}")
       start_pos=$end_pos
       continue
     fi
@@ -483,10 +486,10 @@ _history_search_multi_word_highlight_process()
                           # is how [[ ... ]] is highlighted, too.
 
                           # ADD
-                          reply+=("$start_pos $(( start_pos + 2 )) ${HSMW_HIGHLIGHT_STYLES[reserved-word]}")
+                          reply+=("$start_pos $(( start_pos + 2 )) ${_history_search_multi_word_highlight_styles[reserved-word]}")
                           already_added=1
                           # ADD
-                          [[ $arg[-2,-1] == '))' ]] && reply+=("$(( end_pos - 2 )) $end_pos ${HSMW_HIGHLIGHT_STYLES[reserved-word]}")
+                          [[ $arg[-2,-1] == '))' ]] && reply+=("$(( end_pos - 2 )) $end_pos ${_history_search_multi_word_highlight_styles[reserved-word]}")
                         elif [[ $arg == '()' ]]; then
                           # anonymous function
                           style=reserved-word
@@ -544,13 +547,13 @@ _history_search_multi_word_highlight_process()
         "'"*)    style=single-quoted-argument;;
         '"'*)
                  # ADD
-                 reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[double-quoted-argument]}")
+                 reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[double-quoted-argument]}")
                  _history_search_multi_word_highlight_string
                  already_added=1
                  ;;
         \$\'*)
                  # ADD
-                 reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[dollar-quoted-argument]}")
+                 reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[dollar-quoted-argument]}")
                  _history_search_multi_word_highlight_dollar_string
                  already_added=1
                  ;;
@@ -578,14 +581,14 @@ _history_search_multi_word_highlight_process()
                  else
                    if (( _history_search_multi_word_no_check_paths == 0 )) && _history_search_multi_word_highlight_check_path; then
                      # ADD
-                     reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[path]}")
+                     reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[path]}")
                      already_added=1
 
-                     [[ -n "$HSMW_HIGHLIGHT_STYLES[path_pathseparator]" && "$HSMW_HIGHLIGHT_STYLES[path]" != "$HSMW_HIGHLIGHT_STYLES[path_pathseparator]" ]] && {
+                     [[ -n "$_history_search_multi_word_highlight_styles[path_pathseparator]" && "$_history_search_multi_word_highlight_styles[path]" != "$_history_search_multi_word_highlight_styles[path_pathseparator]" ]] && {
                        local pos
                        for (( pos = start_pos; pos <= end_pos; pos++ )) ; do
                          # ADD
-                         [[ ${buf[pos]} == "/" ]] && reply+=("$(( pos - 1 )) $pos ${HSMW_HIGHLIGHT_STYLES[path_pathseparator]}")
+                         [[ ${buf[pos]} == "/" ]] && reply+=("$(( pos - 1 )) $pos ${_history_search_multi_word_highlight_styles[path_pathseparator]}")
                        done
                      }
                    else
@@ -597,7 +600,7 @@ _history_search_multi_word_highlight_process()
     fi
 
     # ADD
-    (( already_added == 0 )) && [[ "${HSMW_HIGHLIGHT_STYLES[$style]}" != "none" ]] && reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[$style]}")
+    (( already_added == 0 )) && [[ "${_history_search_multi_word_highlight_styles[$style]}" != "none" ]] && reply+=("$start_pos $end_pos ${_history_search_multi_word_highlight_styles[$style]}")
 
     if (( arg_type == 3 )); then
       if [[ $arg == ';' ]] && (( in_array_assignment )); then
@@ -637,7 +640,11 @@ _history_search_multi_word_highlight_process()
 _history_search_multi_word_highlight_check_path()
 {
   : ${expanded_path:=${(Q)~arg}}
-  [[ -n "${FAST_BLIST_PATTERNS[(k)$expanded_path]}" ]] && return 1
+  # Paths matching a skip-paths pattern are never tested, e.g. slow mounts.
+  local skip_pattern
+  for skip_pattern in "${_history_search_multi_word_highlight_skip_paths[@]}"; do
+    [[ $expanded_path == ${~skip_pattern} ]] && return 1
+  done
 
   [[ -z $expanded_path ]] && return 1
   [[ -e $expanded_path ]] && return 0
@@ -669,7 +676,7 @@ _history_search_multi_word_highlight_string()
       mybuf="${match[8]}"
 
       # ADD
-      reply+=("$idx $end_idx ${HSMW_HIGHLIGHT_STYLES[back-or-dollar-double-quoted-argument]}")
+      reply+=("$idx $end_idx ${_history_search_multi_word_highlight_styles[back-or-dollar-double-quoted-argument]}")
 
       idx=end_idx
     }
@@ -713,7 +720,7 @@ _history_search_multi_word_highlight_dollar_string()
 
     esac
     # ADD
-    reply+=("$j $k ${HSMW_HIGHLIGHT_STYLES[$style]}")
+    reply+=("$j $k ${_history_search_multi_word_highlight_styles[$style]}")
   done
 }
 
@@ -723,5 +730,17 @@ _history_search_multi_word_highlight_dollar_string()
 
 _history_search_multi_word_highlight_init() {
   _history_search_multi_word_highlight_command_type_cache=()
+
+  typeset -gA _history_search_multi_word_highlight_styles
+  typeset -ga _history_search_multi_word_highlight_skip_paths
+  _history_search_multi_word_highlight_styles=()
+  local token value
+  for token in "${(@k)_history_search_multi_word_highlight_defaults}"; do
+    zstyle -s ':history-search-multi-word:highlight' "$token" value ||
+      value=${_history_search_multi_word_highlight_defaults[$token]}
+    _history_search_multi_word_highlight_styles[$token]=$value
+  done
+  zstyle -a ':history-search-multi-word' skip-paths _history_search_multi_word_highlight_skip_paths ||
+    _history_search_multi_word_highlight_skip_paths=()
 }
 

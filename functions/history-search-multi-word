@@ -17,11 +17,13 @@
 #
 # This will bind to Ctrl-R
 #
-# Zstyles:
-# zstyle ":history-search-multi-word" page-size "8"
-# zstyle ":history-search-multi-word" highlight-color "fg=yellow,bold"
-# zstyle ":plugin:history-search-multi-word" synhl "yes"
-# zstyle ":plugin:history-search-multi-word" clear-on-cancel "no"
+# Configuration: every style lives in the :history-search-multi-word context
+# and is read when a search starts. See docs/README.md for the full list.
+#   zstyle :history-search-multi-word page-size 8
+#   zstyle :history-search-multi-word highlight-color "fg=yellow,bold"
+#   zstyle :history-search-multi-word synhl yes
+#   zstyle :history-search-multi-word clear-on-cancel no
+#   zstyle :history-search-multi-word:highlight command "fg=green"
 
 (( ${+functions[_history_search_multi_word_highlight_process]} )) || _history_search_multi_word_highlight
 local right_brace_is_recognised_everywhere
@@ -65,9 +67,9 @@ _history_search_multi_word_main() {
       zstyle -s ':history-search-multi-word' highlight-color _history_search_multi_word_hl_color || {
         [[ ${termcap[Co]-} == 256 ]] && _history_search_multi_word_hl_color="bg=17" || _history_search_multi_word_hl_color="fg=yellow,bold"
       }
-      zstyle -T ":plugin:history-search-multi-word" synhl && _history_search_multi_word_synhl=1 || _history_search_multi_word_synhl=0
-      zstyle -s ":plugin:history-search-multi-word" active _history_search_multi_word_active || _history_search_multi_word_active="underline"
-      zstyle -T ":plugin:history-search-multi-word" check-paths && _history_search_multi_word_no_check_paths=0 || _history_search_multi_word_no_check_paths=1
+      zstyle -T ':history-search-multi-word' synhl && _history_search_multi_word_synhl=1 || _history_search_multi_word_synhl=0
+      zstyle -s ':history-search-multi-word' active _history_search_multi_word_active || _history_search_multi_word_active="underline"
+      zstyle -T ':history-search-multi-word' check-paths && _history_search_multi_word_no_check_paths=0 || _history_search_multi_word_no_check_paths=1
       _history_search_multi_word_highlight_init
     fi
     # '0' will get changed into $to_display limit
@@ -259,7 +261,7 @@ _history_search_multi_word_jump_entry() {
 if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
   # Load config of reset-prompt protection
   local _history_search_multi_word_reset_prompt_protect
-  zstyle -t ":plugin:history-search-multi-word" reset-prompt-protect && _history_search_multi_word_reset_prompt_protect=1 || _history_search_multi_word_reset_prompt_protect=0
+  zstyle -t ':history-search-multi-word' reset-prompt-protect && _history_search_multi_word_reset_prompt_protect=1 || _history_search_multi_word_reset_prompt_protect=0
   # Make the search keymap a copy of emacs
   bindkey -N history-search-multi-word emacs
   local down_widget="${${${WIDGET%-backwards}%-pbackwards}%-pforwards}"
@@ -371,7 +373,7 @@ if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
   bindkey -M history-search-multi-word "^[" _history_search_multi_word_cancel_accept
   # Load cancel behavior
   local _history_search_multi_word_conc
-  zstyle -t ":plugin:history-search-multi-word" clear-on-cancel && _history_search_multi_word_conc=1 || _history_search_multi_word_conc=0
+  zstyle -t ':history-search-multi-word' clear-on-cancel && _history_search_multi_word_conc=1 || _history_search_multi_word_conc=0
   # Trap INT to manually interrupt Zle to work around a bug
   _history_search_multi_word_recedit_trap_executed=0
   trap '(( _history_search_multi_word_recedit_trap_executed == 0 )) && zle && { _history_search_multi_word_recedit_trap_executed=1; zle .send-break; }' INT

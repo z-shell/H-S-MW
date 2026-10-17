@@ -84,7 +84,7 @@ run context '' $'\C-r' 'push' $'\C-k' $'\C-xa' $'\C-k' $'\C-xb' $'\r' $'\C-xc' &
 run cancel '' $'\C-r' 'git' $'\C-v' $'\C-xa' &&
   expect cancel a buffer 'git' && expect cancel a postdisplay '' &&
   hsmw_test_pass cancel
-run clear-on-cancel 'zstyle :plugin:history-search-multi-word clear-on-cancel yes' \
+run clear-on-cancel 'zstyle :history-search-multi-word clear-on-cancel yes' \
   $'\C-r' 'git' $'\C-v' $'\C-xa' &&
   expect clear-on-cancel a buffer '' && hsmw_test_pass clear-on-cancel
 
@@ -92,9 +92,25 @@ run clear-on-cancel 'zstyle :plugin:history-search-multi-word clear-on-cancel ye
 run highlight '' $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
   expect highlight a region_highlight '*fg=green*fg=cyan*fg=magenta*' &&
   hsmw_test_pass highlight
-run no-highlight 'zstyle :plugin:history-search-multi-word synhl no' \
+run no-highlight 'zstyle :history-search-multi-word synhl no' \
   $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
   expect no-highlight a region_highlight '^(*fg=magenta*)' && hsmw_test_pass no-highlight
+
+# Token styles come from the :history-search-multi-word:highlight context.
+run token-style 'zstyle :history-search-multi-word:highlight command fg=red' \
+  $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
+  expect token-style a region_highlight '*fg=red*' &&
+  expect token-style a region_highlight '^(*fg=green*)' && hsmw_test_pass token-style
+
+# Paths matching a skip-paths pattern are not tested, so not shown as paths.
+run skip-paths "zstyle :history-search-multi-word skip-paths '/t*'" \
+  $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
+  expect skip-paths a region_highlight '^(*fg=magenta*)' && hsmw_test_pass skip-paths
+
+# Version 2 reads one context: the former :plugin: context has no effect.
+run former-context 'zstyle :plugin:history-search-multi-word synhl no' \
+  $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
+  expect former-context a region_highlight '*fg=magenta*' && hsmw_test_pass former-context
 
 # Editing the query restarts the search.
 run edit-query '' $'\C-r' 'gix' $'\C-h' 't' $'\C-xa' $'\r' $'\C-xb' &&
