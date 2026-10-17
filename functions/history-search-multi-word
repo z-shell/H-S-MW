@@ -25,7 +25,13 @@
 #   zstyle :history-search-multi-word clear-on-cancel no
 #   zstyle :history-search-multi-word:highlight command "fg=green"
 
+# The helpers are autoloaded here too, for an installation that puts
+# functions/ on fpath without sourcing the plugin file.
+autoload -Uz _history_search_multi_word_context _history_search_multi_word_highlight
+typeset -gA _history_search_multi_word_state
 (( ${+functions[_history_search_multi_word_highlight_process]} )) || _history_search_multi_word_highlight
+# Read before emulation on purpose: these record how the user's own shell
+# parses commands, so history entries are highlighted the way it would.
 local right_brace_is_recognised_everywhere
 integer path_dirs_was_set multi_func_def ointeractive_comments
 _history_search_multi_word_highlight_fill_option_variables
@@ -33,10 +39,21 @@ _history_search_multi_word_highlight_fill_option_variables
 builtin emulate -RL zsh ${=${options[xtrace]:#off}:+-o xtrace}
 builtin setopt extended_glob typeset_silent \
 local_traps prompt_subst no_short_loops rc_quotes no_auto_pushd
+# Every helper runs inside this call, so these keep pattern and reply
+# results from leaking into the shell as globals.
+local MATCH REPLY; integer MBEGIN MEND
+local -a match mbegin mend reply
 
-# When an error, then no cursor keys bindings
-zmodload zsh/terminfo 2>/dev/null
-zmodload zsh/termcap 2>/dev/null
+# The key tables come from these modules; without them only the fixed
+# sequences below are bound. Record the ones this search loads, so the unload
+# function can return them to their autoloaded state.
+local _history_search_multi_word_module
+for _history_search_multi_word_module in zsh/terminfo zsh/termcap; do
+  zmodload -e $_history_search_multi_word_module && continue
+  zmodload $_history_search_multi_word_module 2>/dev/null &&
+    _history_search_multi_word_state[modules]+=" $_history_search_multi_word_module"
+done
+unset _history_search_multi_word_module
 
 typeset -g _history_search_multi_word_hcw_index
 typeset -g _history_search_multi_word_hcw_widget_name _history_search_multi_word_hcw_restart _history_search_multi_word_hcw_call_count
@@ -262,12 +279,16 @@ if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
   # Load config of reset-prompt protection
   local _history_search_multi_word_reset_prompt_protect
   zstyle -t ':history-search-multi-word' reset-prompt-protect && _history_search_multi_word_reset_prompt_protect=1 || _history_search_multi_word_reset_prompt_protect=0
-  # Make the search keymap a copy of emacs
-  bindkey -N history-search-multi-word emacs
   local down_widget="${${${WIDGET%-backwards}%-pbackwards}%-pforwards}"
   local up_widget="${down_widget}-backwards"
   local pdown_widget="${down_widget}-pforwards"
   local pup_widget="${down_widget}-pbackwards"
+  local _history_search_multi_word_conc _history_search_multi_word_saved
+  # Everything below replaces other widgets and hooks for the duration of the
+  # search; the always block puts them back even when the search fails.
+  {
+  # Make the search keymap a copy of emacs
+  bindkey -N history-search-multi-word emacs
   # Manual, termcap, terminfo
   bindkey -M history-search-multi-word '^[OA' "$up_widget"
   bindkey -M history-search-multi-word '^[OB' "$down_widget"
@@ -372,7 +393,6 @@ if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
   bindkey -M history-search-multi-word "^V" _history_search_multi_word_cancel_accept
   bindkey -M history-search-multi-word "^[" _history_search_multi_word_cancel_accept
   # Load cancel behavior
-  local _history_search_multi_word_conc
   zstyle -t ':history-search-multi-word' clear-on-cancel && _history_search_multi_word_conc=1 || _history_search_multi_word_conc=0
   # Trap INT to manually interrupt Zle to work around a bug
   _history_search_multi_word_recedit_trap_executed=0
@@ -399,43 +419,34 @@ if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
     (( _history_search_multi_word_conc )) && BUFFER=""
     unset _history_search_multi_word_conc
   fi
+  } always {
   POSTDISPLAY=""
   # While the search runs it replaces region_highlight wholesale, so every
   # entry left now paints the result list that was just removed. Clear them;
   # the restored hooks repaint the buffer.
   region_highlight=( )
   (( ${+functions[_history_search_multi_word_ctx_off]} )) && _history_search_multi_word_ctx_off 0
-  # Restore self-insert, backward-delete-char, delete-char
-  zle -A _history_search_multi_word_saved_self-insert self-insert
-  zle -A _history_search_multi_word_saved_backward-delete-char backward-delete-char
-  zle -A _history_search_multi_word_saved_delete-char delete-char
-  (( _history_search_multi_word_reset_prompt_protect )) && zle -A _history_search_multi_word_saved_reset-prompt reset-prompt
-  zle -D _history_search_multi_word_saved_self-insert _history_search_multi_word_saved_backward-delete-char _history_search_multi_word_saved_delete-char
-  (( _history_search_multi_word_reset_prompt_protect )) && zle -D _history_search_multi_word_saved_reset-prompt
-  zle -la _history_search_multi_word_saved_zle-keymap-select && {
-    zle -A _history_search_multi_word_saved_zle-keymap-select zle-keymap-select
-    zle -D _history_search_multi_word_saved_zle-keymap-select
-  }
-  zle -la _history_search_multi_word_saved_zle-line-pre-redraw && {
-    zle -A _history_search_multi_word_saved_zle-line-pre-redraw zle-line-pre-redraw
-    zle -D _history_search_multi_word_saved_zle-line-pre-redraw
-  }
-  # Restore ourselves
-  zle -A _history_search_multi_word_saved_"$down_widget" "$down_widget"
-  zle -A _history_search_multi_word_saved_"$up_widget" "$up_widget"
-  zle -D _history_search_multi_word_saved_"$down_widget" _history_search_multi_word_saved_"$up_widget"
-  zle -A _history_search_multi_word_saved_"$pdown_widget" "$pdown_widget"
-  zle -A _history_search_multi_word_saved_"$pup_widget" "$pup_widget"
-  zle -D _history_search_multi_word_saved_"$pdown_widget" _history_search_multi_word_saved_"$pup_widget"
-  if (( ${+functions[azhw:zle-line-pre-redraw]} )); then
+  # Put back every widget saved above, including the search widgets
+  # themselves; a step the search never reached has no saved copy.
+  for _history_search_multi_word_saved in self-insert backward-delete-char delete-char reset-prompt \
+      zle-keymap-select zle-line-pre-redraw \
+      "$down_widget" "$up_widget" "$pdown_widget" "$pup_widget"; do
+    zle -la _history_search_multi_word_saved_$_history_search_multi_word_saved || continue
+    zle -A _history_search_multi_word_saved_$_history_search_multi_word_saved $_history_search_multi_word_saved
+    zle -D _history_search_multi_word_saved_$_history_search_multi_word_saved
+  done
+  if (( ${+functions[_history_search_multi_word_saved_line_pre_redraw]} )); then
     functions[azhw:zle-line-pre-redraw]=${functions[_history_search_multi_word_saved_line_pre_redraw]}
+    unfunction _history_search_multi_word_saved_line_pre_redraw
   fi
-  if (( ${+functions[azhw:zle-line-finish]} )); then
+  if (( ${+functions[_history_search_multi_word_saved_line_finish]} )); then
     functions[azhw:zle-line-finish]=${functions[_history_search_multi_word_saved_line_finish]}
+    unfunction _history_search_multi_word_saved_line_finish
   fi
   # Full reinitialisation at next call
   _history_search_multi_word_hcw_call_count="0"
   zle reset-prompt
+  }
   # Free memory
   #_history_search_multi_word_hcw_found=( )
 elif (( _history_search_multi_word_hcw_call_count > 0 )); then

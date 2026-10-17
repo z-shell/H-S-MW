@@ -75,7 +75,7 @@ in_clean_shell no-side-effects "
   typeset options_before=\${(kv)options}
   source ${(q)plugin}
   typeset -a new_params=( \${\${(k)parameters}:|params_before} )
-  new_params=( \${new_params:#(params_before|modules_before|styles_before|options_before)} )
+  new_params=( \${new_params:#(params_before|modules_before|styles_before|options_before|_history_search_multi_word_state)} )
   (( \$#new_params == 0 )) || { print new parameters: \$new_params; exit 1 }
   typeset -a new_modules=( \${\${(k)modules}:|modules_before} )
   (( \$#new_modules == 0 )) || { print new modules: \$new_modules; exit 1 }

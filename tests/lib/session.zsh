@@ -49,8 +49,8 @@ hsmw_test_session() {
     print -r -- "  print -r -- \"\$1|pre_redraw=\${widgets[zle-line-pre-redraw]-}|keymap_select=\${widgets[zle-keymap-select]-}|redraws=\${hsmw_test_redraws-0}|buffer=\$BUFFER|buffer_length=\${#BUFFER}|postdisplay=\${\${POSTDISPLAY//\$hsmw_test_nl/ }//|/ }|region_highlight=\${(j:,:)region_highlight}\" >> ${(q)out}"
     print -r -- "}"
     print -r -- "for _n in a b c d e f g; do eval \"_hsmw_test_dump_\$_n() { hsmw_test_dump \$_n }\"; zle -N _hsmw_test_dump_\$_n; bindkey \"^X\$_n\" _hsmw_test_dump_\$_n; bindkey -M emacs \"^X\$_n\" _hsmw_test_dump_\$_n; done; unset _n"
-    print -r -- "$fragment"
     print -r -- "precmd() { : >| ${(q)ready} }"
+    print -r -- "$fragment"
   } >| $dir/.zshrc
   zpty -b "hsmw-$name" "exec env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=${(q)dir} ZDOTDIR=${(q)dir} TERM=xterm-256color LINES=40 COLUMNS=120 ${(q)${TEST_ZSH:-zsh}} -o no_global_rcs -i" || {
     hsmw_test_fail "$name: cannot start an interactive shell"
