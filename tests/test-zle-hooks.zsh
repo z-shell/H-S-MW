@@ -48,7 +48,7 @@ check_hooks() {
     hsmw_test_fail "$name: the zle-keymap-select widget is gone after the search"
   (( $(hsmw_test_field "$after" redraws) > $(hsmw_test_field "$before" redraws) )) ||
     hsmw_test_fail "$name: typing after the search no longer runs the line-pre-redraw hook"
-  [[ $(hsmw_test_field "$before" finish_body) != : ]] ||
+  [[ -n $(hsmw_test_field "$before" finish_body) && $(hsmw_test_field "$before" finish_body) != : ]] ||
     hsmw_test_fail "$name: the line-finish hooks are still paused after the search"
   [[ -z $(hsmw_test_field "$before" saved_functions) ]] ||
     hsmw_test_fail "$name: saved hook copies remain: $(hsmw_test_field "$before" saved_functions)"
@@ -91,7 +91,7 @@ typeset -g hsmw_test_prior=
 _hsmw_test_paint() {
   [[ \$BUFFER == \"\$hsmw_test_prior\" ]] && return 0
   hsmw_test_prior=\$BUFFER
-  region_highlight=( \"0 \${#BUFFER} fg=red\" )
+  region_highlight=( \"0 \${#BUFFER} fg=red\" \"\${#BUFFER} \$(( \${#BUFFER} + 4 )) fg=blue\" )
 }
 zle -N _hsmw_test_paint
 add-zle-hook-widget line-pre-redraw _hsmw_test_paint" 'ls -la /tmp' $'\C-xa' "$@" $'\C-xb' || return
@@ -100,10 +100,12 @@ add-zle-hook-widget line-pre-redraw _hsmw_test_paint" 'ls -la /tmp' $'\C-xa' "$@
     hsmw_test_fail "$name: the probes did not run (${#reply} dump lines)"
     return
   fi
-  [[ $(hsmw_test_field "$before" region_highlight) == '0 11 fg=red' ]] ||
+  # The second entry starts past the end of the line, where only a
+  # suggestion could be painted; it must not come back.
+  [[ $(hsmw_test_field "$before" region_highlight) == '0 11 fg=red,11 15 fg=blue' ]] ||
     hsmw_test_fail "$name: the stub highlighter did not paint: $before"
   [[ $(hsmw_test_field "$after" region_highlight) == '0 11 fg=red' ]] ||
-    hsmw_test_fail "$name: the line lost its highlighting: $(hsmw_test_field "$after" region_highlight)"
+    hsmw_test_fail "$name: expected only the line's own paint back: $(hsmw_test_field "$after" region_highlight)"
   (( hsmw_test_status )) || hsmw_test_pass "$name"
   (( hsmw_test_status |= failed ))
 }

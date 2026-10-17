@@ -437,8 +437,13 @@ if [[ "$_history_search_multi_word_hcw_call_count" -eq "1" ]]; then
   # back its entries for the buffer itself; any past its end belonged to a
   # suggestion that is gone.
   if [[ $BUFFER == "$orig_buffer" ]]; then
-    region_highlight=( ${(M)orig_region_highlight:#(P|)<->\ *} )
-    region_highlight=( ${region_highlight:#(P|)<${#BUFFER}->\ *} )
+    # A numeric range cannot take its bound from a parameter, so compare the
+    # start offsets arithmetically.
+    local orig_entry
+    region_highlight=( )
+    for orig_entry in ${(M)orig_region_highlight:#(P|)<->\ *}; do
+      (( ${${orig_entry#P}%% *} < ${#BUFFER} )) && region_highlight+=( "$orig_entry" )
+    done
   else
     region_highlight=( )
   fi
