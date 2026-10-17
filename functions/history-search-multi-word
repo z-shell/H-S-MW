@@ -408,7 +408,7 @@ if [[ "$__hsmw_hcw_call_count" -eq "1" ]]; then
     zle -A hsmw-saved-zle-keymap-select zle-keymap-select
     zle -D hsmw-saved-zle-keymap-select
   }
-  zle -la zle-line-pre-redraw && {
+  zle -la hsmw-saved-zle-line-pre-redraw && {
     zle -A hsmw-saved-zle-line-pre-redraw zle-line-pre-redraw
     zle -D hsmw-saved-zle-line-pre-redraw
   }
