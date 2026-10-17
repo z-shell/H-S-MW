@@ -1,0 +1,49 @@
+---
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (Zsh ${{ matrix.zsh }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # 5.8.1 is the oldest exact release the organization action builds;
+        # the declared floor, 5.8, is also checked locally.
+        zsh: ["5.8.1", "5.9.2"]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Zsh ${{ matrix.zsh }}
+        id: zsh
+        uses: z-shell/.github/actions/setup-zsh@9c96960532066b8686b0bf74628f859990a9231b # main
+        with:
+          version: ${{ matrix.zsh }}
+      - name: Run the test suites
+        env:
+          TEST_ZSH: ${{ steps.zsh.outputs.executable }}
+        run: |
+          status=0
+          for test in tests/test-*.zsh; do
+            echo "::group::$test"
+            env -u FPATH "$TEST_ZSH" -f "$test" || status=1
+            echo "::endgroup::"
+          done
+          exit "$status"
