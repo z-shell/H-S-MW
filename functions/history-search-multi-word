@@ -61,7 +61,10 @@ _hsmw_main() {
     if [[ "$__hsmw_hcw_call_count" -le 1 ]]; then
       # Read configuration data
       zstyle -s ':history-search-multi-word' page-size __hsmw_page_size || __hsmw_page_size=$(( LINES / 3 ))
-      zstyle -s ':history-search-multi-word' highlight-color __hsmw_hl_color || __hsmw_hl_color="fg=yellow,bold"
+      # A 256-colour terminal defaults to a background, others to bold yellow.
+      zstyle -s ':history-search-multi-word' highlight-color __hsmw_hl_color || {
+        [[ ${termcap[Co]-} == 256 ]] && __hsmw_hl_color="bg=17" || __hsmw_hl_color="fg=yellow,bold"
+      }
       zstyle -T ":plugin:history-search-multi-word" synhl && __hsmw_synhl=1 || __hsmw_synhl=0
       zstyle -s ":plugin:history-search-multi-word" active __hsmw_active || __hsmw_active="underline"
       zstyle -T ":plugin:history-search-multi-word" check-paths && __hsmw_no_check_paths=0 || __hsmw_no_check_paths=1
