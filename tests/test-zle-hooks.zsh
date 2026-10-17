@@ -46,7 +46,28 @@ check_hooks() {
   (( hsmw_test_status )) || hsmw_test_pass "$name"
 }
 
+# check_no_leftovers NAME EXIT_KEY: the search paints the result list it shows
+# below the buffer. Once it ends, none of those entries may remain: nobody else
+# paints in this shell, so region_highlight must be empty. A highlighter that
+# keeps other plugins' entries, as F-Sy-H does on Zsh 5.9, would otherwise
+# repaint them over the buffer and over suggestions.
+check_no_leftovers() {
+  local name=$1 exit_key=$2 probe entries
+  hsmw_test_session "$name" "$rc_fragment" $'\C-r' 'ls' "$exit_key" $'\C-xa' || return
+  probe=${reply[(r)a\|*]}
+  if [[ -z $probe ]]; then
+    hsmw_test_fail "$name: the probe did not run (${#reply} dump lines)"
+    return
+  fi
+  entries=$(hsmw_test_field "$probe" region_highlight)
+  [[ -z $entries ]] ||
+    hsmw_test_fail "$name: search highlights remain after the search: $entries"
+  (( hsmw_test_status )) || hsmw_test_pass "$name"
+}
+
 check_hooks accept $'\r'
 check_hooks cancel $'\C-v'
+check_no_leftovers accept-leftovers $'\r'
+check_no_leftovers cancel-leftovers $'\C-v'
 
 exit $hsmw_test_status

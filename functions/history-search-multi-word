@@ -396,6 +396,10 @@ if [[ "$__hsmw_hcw_call_count" -eq "1" ]]; then
     unset __hsmw_conc
   fi
   POSTDISPLAY=""
+  # While the search runs it replaces region_highlight wholesale, so every
+  # entry left now paints the result list that was just removed. Clear them;
+  # the restored hooks repaint the buffer.
+  region_highlight=( )
   (( ${+functions[_hsmw_ctx_off]} )) && _hsmw_ctx_off 0
   # Restore self-insert, backward-delete-char, delete-char
   zle -A hsmw-saved-self-insert self-insert
