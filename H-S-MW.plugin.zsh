@@ -17,14 +17,12 @@
   local -r plugin_dir=${source_path:h}
   local -r functions_dir=$plugin_dir/functions
 
-  typeset -g HSMW_REPO_DIR=$plugin_dir
-
   # Add functions/ only when no manager or earlier load already did.
   if (( ! ${fpath[(Ie)$functions_dir]} )); then
     fpath+=( "$functions_dir" )
   fi
 
-  autoload -Uz history-search-multi-word hsmw-context-main
+  autoload -Uz history-search-multi-word _history_search_multi_word_context _history_search_multi_word_highlight
 
   # Widgets and key bindings belong to the line editor of an interactive shell.
   [[ -o interactive ]] || return 0

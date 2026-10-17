@@ -31,7 +31,7 @@
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # -------------------------------------------------------------------------------------------------
 
-typeset -gA __hsmw_highlight_main__command_type_cache
+typeset -gA _history_search_multi_word_highlight_command_type_cache
 
 # Define default styles.
 typeset -gA HSMW_HIGHLIGHT_STYLES
@@ -65,9 +65,9 @@ typeset -gA HSMW_HIGHLIGHT_STYLES
 : ${HSMW_HIGHLIGHT_STYLES[variable]:=none}
 
 
-typeset -gA __HSMW_HIGHLIGHT_TOKENS_TYPES
+typeset -gA _history_search_multi_word_highlight_token_types
 
-__HSMW_HIGHLIGHT_TOKENS_TYPES=(
+_history_search_multi_word_highlight_token_types=(
 
   # Precommand
 
@@ -121,8 +121,8 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 # Takes a single argument.
 #
 # The result will be stored in REPLY.
--hsmw-highlight-main-type() {
-  REPLY=$__hsmw_highlight_main__command_type_cache[(e)$1]
+_history_search_multi_word_highlight_main_type() {
+  REPLY=$_history_search_multi_word_highlight_command_type_cache[(e)$1]
   [[ -z "$REPLY" ]] && {
 
   if zmodload -e zsh/parameter; then
@@ -159,14 +159,14 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
     }
   }
 
-  __hsmw_highlight_main__command_type_cache[(e)$1]=$REPLY
+  _history_search_multi_word_highlight_command_type_cache[(e)$1]=$REPLY
 
   }
 }
 
 # Check that the top of $braces_stack has the expected value.  If it does, set
 # the style according to $2; otherwise, set style=unknown-token.
-#-hsmw-highlight-stack-pop() {
+#_history_search_multi_word_highlight_stack_pop() {
 
 # Below are variables that must be defined in outer
 # scope so that they are reachable in *-process()
@@ -175,7 +175,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 # integer path_dirs_was_set
 # integer multi_func_def
 # integer ointeractive_comments
--hsmw-highlight-fill-option-variables() {
+_history_search_multi_word_highlight_fill_option_variables() {
   if [[ -o ignore_braces ]] || eval '[[ -o ignore_close_braces ]] 2>/dev/null'; then
     right_brace_is_recognised_everywhere=0
   else
@@ -202,7 +202,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 }
 
 # Main syntax highlighting function.
--hsmw-highlight-process()
+_history_search_multi_word_highlight_process()
 {
   emulate -L zsh
   setopt extendedglob bareglobqual nonomatch noksharrays
@@ -331,7 +331,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
       ((end_pos=start_pos+${#arg}))
 
       # No-hit will result in value 0
-      arg_type=${__HSMW_HIGHLIGHT_TOKENS_TYPES[$arg]}
+      arg_type=${_history_search_multi_word_highlight_token_types[$arg]}
     fi
 
     proc_buf="${proc_buf[offset + $#arg + 1,len]}"
@@ -409,10 +409,10 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
        # incorrectness is outweighed by the usability improvement of permitting the use of
        # parameters that refer to commands, functions, and builtins.
        if [[ ${arg[1]} == \$ ]] && (( ${+parameters} )) && [[ ${arg:1} = (#m)([a-zA-Z_][a-zA-Z0-9_]#|[0-9]##) ]] && (( ${+parameters[${MATCH}]} )); then
-         -hsmw-highlight-main-type ${(P)MATCH}
+         _history_search_multi_word_highlight_main_type ${(P)MATCH}
        else
          : ${expanded_path::=${(Q)~arg}}
-         -hsmw-highlight-main-type $expanded_path
+         _history_search_multi_word_highlight_main_type $expanded_path
        fi
 
       case $REPLY in
@@ -449,7 +449,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
                           else
                             style=alias
                             zmodload -e zsh/parameter && alias_target=${aliases[$arg]} || alias_target="${"$(alias -- $arg)"#*=}"
-                            [[ ${__HSMW_HIGHLIGHT_TOKENS_TYPES[$alias_target]} = "1" && "$arg_type" != "1" ]] && __HSMW_HIGHLIGHT_TOKENS_TYPES[$arg]="1"
+                            [[ ${_history_search_multi_word_highlight_token_types[$alias_target]} = "1" && "$arg_type" != "1" ]] && _history_search_multi_word_highlight_token_types[$arg]="1"
                           fi
                         ;;
         builtin)        style=builtin;;
@@ -545,13 +545,13 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
         '"'*)
                  # ADD
                  reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[double-quoted-argument]}")
-                 -hsmw-highlight-string
+                 _history_search_multi_word_highlight_string
                  already_added=1
                  ;;
         \$\'*)
                  # ADD
                  reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[dollar-quoted-argument]}")
-                 -hsmw-highlight-dollar-string
+                 _history_search_multi_word_highlight_dollar_string
                  already_added=1
                  ;;
         \$[^\(]*)
@@ -576,7 +576,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
                  elif (( in_redirection == 2 )); then
                    style=redirection
                  else
-                   if (( __hsmw_no_check_paths == 0 )) && -hsmw-highlight-check-path; then
+                   if (( _history_search_multi_word_no_check_paths == 0 )) && _history_search_multi_word_highlight_check_path; then
                      # ADD
                      reply+=("$start_pos $end_pos ${HSMW_HIGHLIGHT_STYLES[path]}")
                      already_added=1
@@ -634,7 +634,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 # Check if $arg is a path.
 # If yes, return 0 and in $REPLY the style to use.
 # Else, return non-zero (and the contents of $REPLY is undefined).
--hsmw-highlight-check-path()
+_history_search_multi_word_highlight_check_path()
 {
   : ${expanded_path:=${(Q)~arg}}
   [[ -n "${FAST_BLIST_PATTERNS[(k)$expanded_path]}" ]] && return 1
@@ -652,7 +652,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 }
 
 # Highlight special chars inside double-quoted strings
--hsmw-highlight-string()
+_history_search_multi_word_highlight_string()
 {
   mybuf="$arg"
   idx=start_pos
@@ -677,7 +677,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 }
 
 # Highlight special chars inside dollar-quoted strings
--hsmw-highlight-dollar-string()
+_history_search_multi_word_highlight_dollar_string()
 {
   local i j k style
   local AA
@@ -721,8 +721,7 @@ __HSMW_HIGHLIGHT_TOKENS_TYPES=(
 # Main highlighter initialization
 # -------------------------------------------------------------------------------------------------
 
--hsmw-highlight-init() {
-  __hsmw_highlight_main__command_type_cache=()
+_history_search_multi_word_highlight_init() {
+  _history_search_multi_word_highlight_command_type_cache=()
 }
 
-typeset -g __HSMW_MH_SOURCED=1
