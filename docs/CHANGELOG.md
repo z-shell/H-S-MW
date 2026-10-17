@@ -1,5 +1,16 @@
 # Changelog
 
+- 17-10-2026
+
+  - After a search, other plugins' line-pre-redraw hooks run again. Syntax highlighters such as F-Sy-H stopped repainting the command line after the first <kbd>Ctrl-R</kbd>.
+  - The result list's highlights no longer linger on the command line after a search.
+  - Version 2 of the Zsh Plugin Standard: every setting is a style in the `:history-search-multi-word` context, token colours are styles in `:history-search-multi-word:highlight`, and `skip-paths` replaces `FAST_BLIST_PATTERNS`. The `:plugin:history-search-multi-word` context and `HSMW_HIGHLIGHT_STYLES` are no longer read; see the upgrade table in the README.
+  - `history-search-multi-word_plugin_unload` removes everything the plugin created; `zi unload` calls it.
+  - Loading works under `posix_argzero` and when a plugin manager exported `PMSPEC`, leaves no stray parameters or styles, and does nothing to the line editor in a non-interactive shell.
+  - The helper function files are renamed to `functions/_history_search_multi_word_context` and `functions/_history_search_multi_word_highlight`, and the context widget to `_history_search_multi_word_context`; a Zi `compile'functions/h*'` ice now compiles only the main widget, so use `compile'functions/*~*.zwc'`.
+  - An empty token style means its default, as an empty `HSMW_HIGHLIGHT_STYLES` value did.
+  - Requires Zsh 5.8 or newer.
+
 - 14-07-2020
 
   - If an `[…]` string will occur in the search query, it'll be interpreted as

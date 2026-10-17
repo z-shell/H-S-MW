@@ -13,25 +13,63 @@
 <p align="center"><a href="../LICENSE" target="_blank">
   <img align="center" src="https://img.shields.io/badge/license-GNU%20GPL%20version%203-blue.svg?style=flat-square" alt="License (GPL version 3)">
 </a>
-<img align="center" src="https://img.shields.io/badge/zsh-v5.0.0-orange.svg?style=flat-square" alt="ZSH v5.0.0"></p><hr />
+<img align="center" src="https://img.shields.io/badge/zsh-v5.8-orange.svg?style=flat-square" alt="Zsh 5.8 or newer"></p><hr />
 
-## Customizing
+## Usage
 
-### Context viewing
+Press <kbd>Ctrl-R</kbd> and type one or more words. Entries that contain every word, in any order, are listed below the command line with syntax highlighting; the newest match comes first. A query in lower case ignores case, and any upper-case letter makes it exact. A leading `^` anchors the first word to the start of the entry and a trailing `$` anchors the last word to its end.
 
-See all occurrences of a command together with surrounding commands set:
+| Key                                                                  | Action                                            |
+| -------------------------------------------------------------------- | ------------------------------------------------- |
+| <kbd>Up</kbd>, <kbd>Down</kbd>, <kbd>Ctrl-P</kbd>, <kbd>Ctrl-N</kbd> | Move to the previous or next match                |
+| <kbd>Page Up</kbd>, <kbd>Page Down</kbd>                             | Move by a page                                    |
+| <kbd>Enter</kbd>                                                     | Put the selected entry on the command line        |
+| <kbd>Ctrl-K</kbd>                                                    | Show the entry in context, and again to go back   |
+| <kbd>Ctrl-J</kbd>                                                    | Copy the selected entry to the end of history     |
+| <kbd>Ctrl-V</kbd>, <kbd>Esc</kbd>, <kbd>Ctrl-C</kbd>                 | Cancel and keep the query (see `clear-on-cancel`) |
+
+## Configuration
+
+Every setting is a style in the `:history-search-multi-word` context, read when a search starts, so a change takes effect on the next <kbd>Ctrl-R</kbd>.
 
 ```zsh
-zstyle :plugin:history-search-multi-word reset-prompt-protect 1
+zstyle :history-search-multi-word page-size 8
+zstyle :history-search-multi-word highlight-color "fg=yellow,bold"
 ```
+
+| Style                  | Type    | Default                                                | Effect                                                                   |
+| ---------------------- | ------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `page-size`            | integer | `LINES / 3`                                            | Entries shown per page; an arithmetic expression such as `LINES/4` works |
+| `highlight-color`      | string  | `bg=17` on 256-colour terminals, else `fg=yellow,bold` | How the searched words are marked in the list                            |
+| `active`               | string  | `underline`                                            | How the selected entry is marked, e.g. `standout`, `bold`, `bg=blue`     |
+| `synhl`                | boolean | `yes`                                                  | Syntax-highlight the list                                                |
+| `check-paths`          | boolean | `yes`                                                  | Test whether words are existing paths and mark them as paths             |
+| `skip-paths`           | array   | empty                                                  | Patterns of paths never tested, e.g. slow network mounts                 |
+| `clear-on-cancel`      | boolean | `no`                                                   | Clear the query when the search is cancelled                             |
+| `reset-prompt-protect` | boolean | `no`                                                   | Keep the search running when something calls `zle reset-prompt`          |
+
+```zsh
+zstyle :history-search-multi-word skip-paths '/mnt/nfs/*' '/media/*'
+```
+
+### Syntax highlighting styles
+
+The colours of the highlighted list are styles in the `:history-search-multi-word:highlight` context, one per token type:
+
+```zsh
+zstyle :history-search-multi-word:highlight path "bg=magenta,fg=white,bold"
+zstyle :history-search-multi-word:highlight commandseparator "fg=241,bg=17"
+```
+
+Token types and their defaults: `default` (none), `unknown-token` (`fg=red,bold`), `reserved-word` (`fg=yellow`), `alias`, `suffix-alias`, `builtin`, `function`, `command`, `precommand`, `hashed-command` (all `fg=green`), `commandseparator` (none), `path` (`fg=magenta`), `path_pathseparator` (empty), `globbing` and `history-expansion` (`fg=blue,bold`), `single-hyphen-option` and `double-hyphen-option` (`fg=cyan`), `back-quoted-argument` (none), `single-quoted-argument`, `double-quoted-argument` and `dollar-quoted-argument` (`fg=yellow`), `back-or-dollar-double-quoted-argument` and `back-dollar-quoted-argument` (`fg=cyan`), `assign` and `redirection` (none), `comment` and `newline` (`fg=black,bold`), `variable` (none).
 
 ### reset-prompt
 
-Use `zle reset-prompt` in `sched` calls, in the presence of [`z-shell/F-Sy-H`](https://github.com/z-shell/F-Sy-H), [`zsh-users/zsh-syntax-highlighting`](https://github.com/zsh-users/zsh-syntax-highlighting), [`zsh-users/zsh-autosuggestions`](https://github.com/zsh-users/zsh-autosuggestions), and other plugins that hook up into Z-Shell by overloading ZLE widgets.
-
-For example, to refresh the clock in prompt every second:
+A prompt that refreshes itself, for example a clock redrawn from `sched`, calls `zle reset-prompt` while the search may be open. With `reset-prompt-protect` set, the search redraws itself after such a call instead of being disturbed:
 
 ```zsh
+zstyle :history-search-multi-word reset-prompt-protect yes
+
 PROMPT=%B%F{yellow}%D{%H:%M:%S}%B%b%f
 schedprompt() {
   zle && zle reset-prompt
@@ -42,56 +80,41 @@ zmodload -i zsh/sched
 schedprompt
 ```
 
-The `reset-prompt-protect` zstyle needs to be set to 1 for correct cooperation with H-S-MW.
+Alternatively, call `zle .reset-prompt` (with the dot) to run the built-in widget rather than a copy other plugins may have wrapped.
 
-Alternatively, you could use `zle .reset-prompt` (i.e. with the dot in front) to call the original, not an overloaded `reset-prompt` widget (created by [F-Sy-H](https://github.com/z-shell/F-Sy-H), [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions), etc.).
+### Upgrading from earlier versions
 
-### Zstyles
+This version follows [version 2 of the Zsh Plugin Standard](https://wiki.zshell.dev/community/zsh_plugin_standard) and reads only the styles above. Move older settings as follows:
 
-```zsh
-zstyle ":history-search-multi-word" page-size "8"                      # Number of entries to show (default is $LINES/3)
-zstyle ":history-search-multi-word" highlight-color "fg=yellow,bold"   # Color in which to highlight matched, searched text (default bg=17 on 256-color terminals)
-zstyle ":plugin:history-search-multi-word" synhl "yes"                 # Whether to perform syntax highlighting (default true)
-zstyle ":plugin:history-search-multi-word" active "underline"          # Effect on active history entry. Try: standout, bold, bg=blue (default underline)
-zstyle ":plugin:history-search-multi-word" check-paths "yes"           # Whether to check paths for existence and mark with magenta (default true)
-zstyle ":plugin:history-search-multi-word" clear-on-cancel "no"        # Whether pressing Ctrl-C or ESC should clear entered query
-```
+| Earlier setting                                        | Now                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------- |
+| `zstyle :plugin:history-search-multi-word STYLE VALUE` | `zstyle :history-search-multi-word STYLE VALUE`            |
+| `HSMW_HIGHLIGHT_STYLES[TOKEN]=VALUE`                   | `zstyle :history-search-multi-word:highlight TOKEN VALUE`  |
+| `FAST_BLIST_PATTERNS[PATTERN]=1`                       | `zstyle :history-search-multi-word skip-paths PATTERN ...` |
 
-### Syntax highlighting
+## Public shell surface
 
-Syntax highlighting is customized via `HSMW_HIGHLIGHT_STYLES` associative array. It has keys like `reserved-word`, `alias`, `command`, `path`, etc. which are assigned with strings like `fg=blue,bold`, to configure how given elements are to be colored. The complete list of available keys is at the beginning of [`functions/hsmw-highlight`](/functions/hsmw-highlight#L36-L65).
+The project identifier is `history-search-multi-word`. Loading the plugin in an interactive shell creates exactly these public names; everything else it creates is private and named `_history_search_multi_word_*`.
 
-If you assign this array in `~/.zshrc` before or after loading `hsmw` you will change the defaults.
+- Function: `history-search-multi-word`, autoloaded; it implements the widgets.
+- Widgets: `history-search-multi-word`, `history-search-multi-word-backwards`, `history-search-multi-word-pforwards`, `history-search-multi-word-pbackwards`.
+- Key binding: <kbd>Ctrl-R</kbd> in the keymap `main` names when the plugin loads, usually `emacs` or `viins`.
+- Style contexts: `:history-search-multi-word` and `:history-search-multi-word:highlight`.
+- Unload function: `history-search-multi-word_plugin_unload`, and `H-S-MW_plugin_unload`, the name Zi calls.
+- `fpath`: the plugin's `functions/` directory, added when it is not already there.
 
-#### Examples
+A search also creates the `history-search-multi-word` keymap and loads `zsh/terminfo` and `zsh/termcap` when they are not loaded yet. A non-interactive shell gets only the `fpath` entry, the autoload definitions, the two unload functions and one private state parameter, `_history_search_multi_word_state`.
 
-##### Sets `path` key – paths that exist will be highlighted with background magenta, foreground white, bold
+## Unloading
 
-```zsh
-typeset -gA HSMW_HIGHLIGHT_STYLES
-HSMW_HIGHLIGHT_STYLES[path]="bg=magenta,fg=white,bold"
-```
-
-##### Enable coloring of options of form "-o" and "--option", with cyan
-
-```zsh
-typeset -gA HSMW_HIGHLIGHT_STYLES
-HSMW_HIGHLIGHT_STYLES[single-hyphen-option]="fg=cyan"
-HSMW_HIGHLIGHT_STYLES[double-hyphen-option]="fg=cyan"
-```
-
-##### Use 256 colors to highlight command separators (like ";" or "&&")
-
-```zsh
-HSMW_HIGHLIGHT_STYLES[commandseparator]="fg=241,bg=17"
-```
+`history-search-multi-word_plugin_unload` removes everything the plugin created: its widgets, keymap, functions, parameters, the `fpath` entry it added and the terminal modules a search loaded. <kbd>Ctrl-R</kbd> gets back the widget or string it had before loading, in the keymap it was bound in, unless you have bound it to something else since; if it was unbound, it is unbound again. With Zi, `zi unload z-shell/H-S-MW` calls it.
 
 ## Installation
 
 **The plugin is "standalone"**, which means that only sourcing it is needed. So to install, unpack `H-S-MW` somewhere and add to `~/.zshrc`:
 
 ```zsh
-source {where-hsmw-is}/H-S-MW.plugin.zsh
+source {where-H-S-MW-is}/H-S-MW.plugin.zsh
 ```
 
 If using a plugin manager, then [Zi](https://github.com/z-shell/zi) is recommended, but you can use others if you prefer:
@@ -113,10 +136,6 @@ Add `zi load z-shell/H-S-MW` to your `~/.zshrc` file. Zi will handle cloning the
 
    `plugins=(... H-S-MW)`
 
-### [Zinit](https://github.com/zdharma-continuum/zinit)
-
-Add `zinit load z-shell/H-S-MW` to your `.zshrc` file.
-
 ### [Antigen](https://github.com/zsh-users/antigen)
 
 Add `antigen bundle z-shell/H-S-MW` to your `.zshrc` file. Antigen will handle cloning the plugin for you automatically the next time you start zsh. You can also add the plugin to a running zsh with `antigen bundle z-shell/H-S-MW` for testing before adding it to your `.zshrc`.
@@ -125,3 +144,17 @@ Add `antigen bundle z-shell/H-S-MW` to your `.zshrc` file. Antigen will handle c
 
 1. Add `zgen load z-shell/H-S-MW` to your .zshrc file in the same place you're doing your other `zgen load` calls in.
 2. Start a new terminal session
+
+## Supported Zsh versions
+
+Zsh 5.8 or newer. The test workflow runs on Zsh 5.8.1 and 5.9.2.
+
+## Development
+
+The tests drive the widget in an interactive shell through `zsh/zpty`; each file runs on its own and prints `ok:` or `FAIL:` lines:
+
+```zsh
+for test in tests/test-*.zsh; do zsh -f "$test"; done
+```
+
+Set `TEST_ZSH` to run the shells under test with another Zsh binary. Loading costs about 2 ms in an interactive shell, measured with `zsh/zprof` and `EPOCHREALTIME` on Zsh 5.9.2; half of it is the subshell that records the earlier <kbd>Ctrl-R</kbd> binding so that unloading can restore it.
