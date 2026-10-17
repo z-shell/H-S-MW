@@ -43,8 +43,8 @@ in_clean_shell plain "source ${(q)plugin} && print OK"
 in_clean_shell repeated "source ${(q)plugin} && source ${(q)plugin} && print OK"
 # Under hostile options the plugin must still find its own directory: run
 # from / so a wrong guess cannot land on the checkout by accident.
-in_clean_shell hostile-options "cd /; setopt ksh_arrays sh_word_split glob_subst; source ${(q)plugin} || exit 1; autoload +X history-search-multi-word || exit 1; print OK"
-in_clean_shell posix-argzero "cd /; setopt no_function_argzero posix_argzero; source ${(q)plugin} || exit 1; autoload +X history-search-multi-word || exit 1; print OK"
+in_clean_shell hostile-options "cd /; setopt ksh_arrays sh_word_split glob_subst; source ${(q)plugin} || exit 1; (( \${fpath[(Ie)${(q)root}/functions]} )) || { print fpath=\$fpath; exit 1 }; print OK"
+in_clean_shell posix-argzero "cd /; setopt no_function_argzero posix_argzero; source ${(q)plugin} || exit 1; (( \${fpath[(Ie)${(q)root}/functions]} )) || { print fpath=\$fpath; exit 1 }; print OK"
 
 # The functions directory is added once, even when loaded twice, and found by
 # autoload whatever the caller's working directory.

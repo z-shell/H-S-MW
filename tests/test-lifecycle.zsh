@@ -123,6 +123,18 @@ out=$(command env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=$dir ZDOTDIR=$dir 
 [[ $out == '"^R" undefined-key' ]] && hsmw_test_pass unload-already-bound ||
   hsmw_test_fail "unload-already-bound: Ctrl-R is [$out], expected it unbound"
 
+# The same for any of the plugin's widgets, such as the backwards one.
+dir=$hsmw_test_tmp/unload-already-bound-sibling
+command mkdir -p -- $dir
+out=$(command env -u FPATH -u PMSPEC -u EDITOR -u VISUAL HOME=$dir ZDOTDIR=$dir "${TEST_ZSH:-zsh}" -f -i -c "
+  zle -N history-search-multi-word-backwards history-search-multi-word
+  bindkey '^R' history-search-multi-word-backwards
+  source ${(q)plugin}
+  history-search-multi-word_plugin_unload
+  bindkey -M emacs '^R'" 2>&1 </dev/null)
+[[ $out == '"^R" undefined-key' ]] && hsmw_test_pass unload-already-bound-sibling ||
+  hsmw_test_fail "unload-already-bound-sibling: Ctrl-R is [$out], expected it unbound"
+
 # A plugin that wraps every widget (zsh-autosuggestions does, on each precmd)
 # replaces the public widget and keeps a copy under its own name. Unload
 # removes the plugin's widgets by name and leaves the wrapper's copy and a

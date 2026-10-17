@@ -27,7 +27,7 @@
   #   fpath       - the functions/ entry, when this load appended it
   #   keymap      - the keymap main named at load, where Ctrl-R is bound
   #   ctrl_r_kind - what Ctrl-R did there before: widget, string, or empty
-  #                 when it was unbound or already ran this plugin's widget
+  #                 when it was unbound or already ran one of this plugin's widgets
   #   ctrl_r      - that widget name or string
   #   modules     - terminal modules the search loaded (it records them)
   typeset -gA _history_search_multi_word_state
@@ -115,7 +115,7 @@
   if [[ ${words[2]-} == -s ]]; then
     _history_search_multi_word_state[ctrl_r_kind]=string
     _history_search_multi_word_state[ctrl_r]=${words[-1]}
-  elif [[ -n ${words[-1]-} && ${words[-1]} != (undefined-key|history-search-multi-word) ]]; then
+  elif [[ -n ${words[-1]-} && ${words[-1]} != (undefined-key|history-search-multi-word(|-backwards|-pbackwards|-pforwards)) ]]; then
     _history_search_multi_word_state[ctrl_r_kind]=widget
     _history_search_multi_word_state[ctrl_r]=${words[-1]}
   fi
