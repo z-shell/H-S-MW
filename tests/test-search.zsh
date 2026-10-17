@@ -58,6 +58,14 @@ run case '' $'\C-r' 'GIT' $'\C-xa' $'\C-v' $'\C-r' 'GIt' $'\C-xb' $'\C-v' &&
 run case-insensitive '' $'\C-r' 'git push' $'\r' $'\C-xa' &&
   expect case-insensitive a buffer 'git push origin' && hsmw_test_pass case-insensitive
 
+# Smart case: a lower-case query folds case, an upper-case letter does not.
+hsmw_test_session smart-case "$load_fragment
+print -s 'git push origin'
+print -s 'Git Push upstream'" \
+  $'\C-r' 'push' $'\C-xa' $'\C-v' $'\C-u' $'\C-r' 'Push' $'\C-xb' $'\C-v' &&
+  expect smart-case a postdisplay '*Entry \#1 of 2*' &&
+  expect smart-case b postdisplay '*Entry \#1 of 1*Git Push upstream*' && hsmw_test_pass smart-case
+
 # Down moves to the next older match; Up from the first wraps to the last.
 run navigate '' $'\C-r' 'git' $'\C-n' $'\r' $'\C-xa' &&
   expect navigate a buffer 'git commit -m one' && hsmw_test_pass navigate
@@ -91,21 +99,24 @@ run clear-on-cancel 'zstyle :history-search-multi-word clear-on-cancel yes' \
 # The result list is syntax highlighted below the buffer, unless disabled.
 run highlight '' $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
   expect highlight a region_highlight '*fg=green*fg=cyan*fg=magenta*' &&
-  hsmw_test_pass highlight
+  expect highlight a region_highlight '*bg=17*' && hsmw_test_pass highlight
 run no-highlight 'zstyle :history-search-multi-word synhl no' \
   $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
-  expect no-highlight a region_highlight '^(*fg=magenta*)' && hsmw_test_pass no-highlight
+  expect no-highlight a region_highlight '^(*fg=magenta*)' &&
+  expect no-highlight a region_highlight '*underline*' && hsmw_test_pass no-highlight
 
 # Token styles come from the :history-search-multi-word:highlight context.
 run token-style 'zstyle :history-search-multi-word:highlight command fg=red' \
   $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
   expect token-style a region_highlight '*fg=red*' &&
-  expect token-style a region_highlight '^(*fg=green*)' && hsmw_test_pass token-style
+  expect token-style a region_highlight '^(*fg=green*)' &&
+  expect token-style a region_highlight '*fg=cyan*' && hsmw_test_pass token-style
 
 # Paths matching a skip-paths pattern are not tested, so not shown as paths.
 run skip-paths "zstyle :history-search-multi-word skip-paths '/t*'" \
   $'\C-r' 'ls' $'\C-xa' $'\C-v' &&
-  expect skip-paths a region_highlight '^(*fg=magenta*)' && hsmw_test_pass skip-paths
+  expect skip-paths a region_highlight '^(*fg=magenta*)' &&
+  expect skip-paths a region_highlight '*fg=green*fg=cyan*' && hsmw_test_pass skip-paths
 
 # Version 2 reads one context: the former :plugin: context has no effect.
 run former-context 'zstyle :plugin:history-search-multi-word synhl no' \

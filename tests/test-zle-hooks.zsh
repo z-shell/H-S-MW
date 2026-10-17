@@ -18,10 +18,13 @@ autoload -Uz add-zle-hook-widget
 typeset -gi hsmw_test_redraws=0
 _hsmw_test_redraw() { hsmw_test_redraws+=1 }
 _hsmw_test_keymap_select() { : }
+_hsmw_test_line_finish() { : }
 zle -N _hsmw_test_redraw
 zle -N _hsmw_test_keymap_select
+zle -N _hsmw_test_line_finish
 add-zle-hook-widget line-pre-redraw _hsmw_test_redraw
 add-zle-hook-widget keymap-select _hsmw_test_keymap_select
+add-zle-hook-widget line-finish _hsmw_test_line_finish
 print -s 'echo first'
 print -s 'ls -la /tmp'
 "
@@ -45,6 +48,10 @@ check_hooks() {
     hsmw_test_fail "$name: the zle-keymap-select widget is gone after the search"
   (( $(hsmw_test_field "$after" redraws) > $(hsmw_test_field "$before" redraws) )) ||
     hsmw_test_fail "$name: typing after the search no longer runs the line-pre-redraw hook"
+  [[ $(hsmw_test_field "$before" finish_body) != : ]] ||
+    hsmw_test_fail "$name: the line-finish hooks are still paused after the search"
+  [[ -z $(hsmw_test_field "$before" saved_functions) ]] ||
+    hsmw_test_fail "$name: saved hook copies remain: $(hsmw_test_field "$before" saved_functions)"
   (( hsmw_test_status )) || hsmw_test_pass "$name"
   (( hsmw_test_status |= failed ))
 }
@@ -103,6 +110,8 @@ add-zle-hook-widget line-pre-redraw _hsmw_test_paint" 'ls -la /tmp' $'\C-xa' "$@
 
 check_hooks accept $'\r'
 check_hooks cancel $'\C-v'
+check_hooks escape $'\e'
+check_hooks interrupt $'\C-c'
 check_repaint repaint-after-cancel $'\C-r' $'\C-v'
 check_repaint repaint-after-same-entry $'\C-r' $'\r'
 check_no_leftovers accept-leftovers $'\r'

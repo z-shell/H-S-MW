@@ -15,7 +15,8 @@ typeset -r zsh_bin=${TEST_ZSH:-zsh}
 integer test_status=0
 typeset home
 home=$(command mktemp -d "${TMPDIR:-/tmp}/hsmw-load.XXXXXXXX") || exit 2
-trap 'command rm -rf -- "$home"' EXIT HUP INT TERM
+trap 'command rm -rf -- "$home"' EXIT
+trap 'command rm -rf -- "$home"; exit 130' HUP INT TERM
 
 fail() { print -u2 -r -- "FAIL: $1"; test_status=1 }
 
@@ -40,8 +41,10 @@ print -r -- "ok: native syntax of ${#sources} files"
 
 in_clean_shell plain "source ${(q)plugin} && print OK"
 in_clean_shell repeated "source ${(q)plugin} && source ${(q)plugin} && print OK"
-in_clean_shell hostile-options "setopt ksh_arrays sh_word_split glob_subst; source ${(q)plugin} && print OK"
-in_clean_shell posix-argzero "setopt no_function_argzero posix_argzero; source ${(q)plugin} && print OK"
+# Under hostile options the plugin must still find its own directory: run
+# from / so a wrong guess cannot land on the checkout by accident.
+in_clean_shell hostile-options "cd /; setopt ksh_arrays sh_word_split glob_subst; source ${(q)plugin} || exit 1; autoload +X history-search-multi-word || exit 1; print OK"
+in_clean_shell posix-argzero "cd /; setopt no_function_argzero posix_argzero; source ${(q)plugin} || exit 1; autoload +X history-search-multi-word || exit 1; print OK"
 
 # The functions directory is added once, even when loaded twice, and found by
 # autoload whatever the caller's working directory.

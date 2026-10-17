@@ -17,7 +17,8 @@ zmodload zsh/zpty || { print -u2 -r -- 'zsh/zpty is unavailable'; exit 2 }
 typeset -gr hsmw_test_root=${${(%):-%N}:A:h:h:h}
 typeset -g hsmw_test_tmp
 hsmw_test_tmp=$(command mktemp -d "${TMPDIR:-/tmp}/hsmw-test.XXXXXXXX") || exit 2
-trap 'command rm -rf -- "$hsmw_test_tmp"' EXIT HUP INT TERM
+trap 'command rm -rf -- "$hsmw_test_tmp"' EXIT
+trap 'command rm -rf -- "$hsmw_test_tmp"; exit 130' HUP INT TERM
 integer -g hsmw_test_status=0
 
 hsmw_test_fail() {
@@ -39,14 +40,19 @@ hsmw_test_session() {
   local out=$dir/out ready=$dir/ready
   integer deadline
   reply=()
-  command mkdir -p -- "$dir" || return 1
+  if [[ -e $dir ]] || ! command mkdir -p -- "$dir"; then
+    hsmw_test_fail "$name: cannot create a fresh session directory $dir"
+    return 1
+  fi
   {
     print -r -- "PS1='> ' RPS1= PROMPT_EOL_MARK="
     print -r -- "unsetopt prompt_cr prompt_sp"
+    # A short key timeout, so a lone Esc is read as Esc, not as a prefix.
+    print -r -- "KEYTIMEOUT=1"
     print -r -- "HISTSIZE=100 SAVEHIST=0"
     print -r -- "typeset -g hsmw_test_nl=\$'\\n'"
     print -r -- "hsmw_test_dump() {"
-    print -r -- "  print -r -- \"\$1|pre_redraw=\${widgets[zle-line-pre-redraw]-}|keymap_select=\${widgets[zle-keymap-select]-}|redraws=\${hsmw_test_redraws-0}|buffer=\$BUFFER|buffer_length=\${#BUFFER}|postdisplay=\${\${POSTDISPLAY//\$hsmw_test_nl/ }//|/ }|region_highlight=\${(j:,:)region_highlight}\" >> ${(q)out}"
+    print -r -- "  print -r -- \"\$1|pre_redraw=\${widgets[zle-line-pre-redraw]-}|keymap_select=\${widgets[zle-keymap-select]-}|redraws=\${hsmw_test_redraws-0}|buffer=\$BUFFER|buffer_length=\${#BUFFER}|postdisplay=\${\${POSTDISPLAY//\$hsmw_test_nl/ }//|/ }|region_highlight=\${(j:,:)region_highlight}|finish_body=\${\${functions[azhw:zle-line-finish]-}//[[:space:]]/}|saved_functions=\${(k)functions[(I)_history_search_multi_word_saved*]}\" >> ${(q)out}"
     print -r -- "}"
     print -r -- "for _n in a b c d e f g; do eval \"_hsmw_test_dump_\$_n() { hsmw_test_dump \$_n }\"; zle -N _hsmw_test_dump_\$_n; bindkey \"^X\$_n\" _hsmw_test_dump_\$_n; bindkey -M emacs \"^X\$_n\" _hsmw_test_dump_\$_n; done; unset _n"
     print -r -- "precmd() { : >| ${(q)ready} }"
